@@ -71,6 +71,10 @@
   }
   .lede { font-size: clamp(1.05rem, 2.1vw, 1.2rem); color: var(--ink-soft); margin: 0 0 1.1rem; max-width: 34rem; }
   .lede strong { color: var(--ink); font-weight: 500; }
+  /* Credential line: present and legible, deliberately understated -- letter-spacing
+     and muted colour read as pedigree without shouting it. */
+  .credential { font-size: .82rem; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--ink-faint); margin: -.4rem 0 1.4rem; font-weight: 500; }
 
   .meta { display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; font-size: .93rem; color: var(--ink-faint); margin-top: 1.6rem; }
   .meta a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 1px; }
@@ -144,6 +148,7 @@
     <div class="hero">
       <div>
         <h1>Saurabh Singh</h1>
+        <p class="credential">MS, Boston University &nbsp;·&nbsp; B.Tech, IIT Kharagpur</p>
         <p class="lede">
           Data engineer in Boston. I build in <strong>Python</strong>, end to end —
           the pipeline, the model on top of it, and the analysis that says whether
