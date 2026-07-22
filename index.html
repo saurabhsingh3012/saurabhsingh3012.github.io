@@ -145,15 +145,21 @@
       <div>
         <h1>Saurabh Singh</h1>
         <p class="lede">
-          Data engineer in Boston. I build the ingestion and transformation layers
-          that analytics and ML teams rely on — currently <strong>GCP, Snowflake,
-          and Airflow</strong>.
+          Data engineer in Boston. I build in <strong>Python</strong>, end to end —
+          the pipeline, the model on top of it, and the analysis that says whether
+          any of it worked.
         </p>
         <p class="lede">
-          What I keep coming back to is machine learning on <strong>messy real-world
-          audio</strong>. Field recordings, sensor streams, industrial time series —
-          signal that arrives noisy, overlapping, and badly labelled. Most of my work
-          sits somewhere between a data pipeline and a spectrogram.
+          Production pipelines on GCP and Snowflake at work; open-source tooling by
+          preference — <strong>Dagster, dbt, DuckDB, Airflow, PyTorch,
+          scikit-learn, NumPy</strong>. I'd rather implement a loudness standard from
+          the spec, or a forecasting model from the maths, than import a black box I
+          can't reason about when it misfires.
+        </p>
+        <p class="lede">
+          What I keep coming back to is <strong>messy real-world signal</strong> —
+          field recordings, sensor streams, industrial time series. Data that arrives
+          noisy, overlapping, and badly labelled.
         </p>
         <div class="meta">
           <span>📍 Boston, MA</span>
@@ -166,6 +172,39 @@
            alt="Saurabh Singh" loading="eager">
     </div>
   </header>
+
+  <section>
+    <h2>How I work</h2>
+    <div class="projects">
+      <article class="card">
+        <h3>Pipelines</h3>
+        <p>Ingestion, transformation, orchestration, and the unglamorous parts —
+        entity resolution across sources that disagree, incremental loads, data
+        quality checks that fire before anyone downstream notices.</p>
+        <p class="stack">Python · Dagster · dbt · Airflow · DuckDB · Postgres · Snowflake · PySpark</p>
+      </article>
+      <article class="card">
+        <h3>Modelling</h3>
+        <p>Forecasting, ranking, and classification — built against honest baselines
+        and validated the way the problem actually demands. Walk-forward splits for
+        time series, not random ones.</p>
+        <p class="stack">scikit-learn · PyTorch · TensorFlow · NumPy · ARIMA · Holt-Winters</p>
+      </article>
+      <article class="card">
+        <h3>Analysis &amp; statistics</h3>
+        <p>Hypothesis testing, backtesting, and measurement you can audit. Where a
+        confound can't be removed, it gets stated rather than buried.</p>
+        <p class="stack">pandas · SciPy · statsmodels · Tableau · Power BI · SQL</p>
+      </article>
+      <article class="card">
+        <h3>From primitives</h3>
+        <p>ITU-R BS.1770 loudness implemented from the standards document. Holt-Winters
+        and ARIMA written from the maths. Validated against signals whose correct
+        answer is derivable on paper before being pointed at real data.</p>
+        <p class="stack">signal processing · time series · benchmarking · evaluation design</p>
+      </article>
+    </div>
+  </section>
 
   <section>
     <h2>Currently building</h2>

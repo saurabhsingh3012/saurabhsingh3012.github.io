@@ -23,7 +23,11 @@
   .lede{color:var(--ink-soft);max-width:42rem;margin:0 0 1rem}
   .note{font-size:.88rem;color:var(--ink-faint);max-width:42rem;margin:0 0 2rem}
 
-  .drop{border:2px dashed var(--rule);border-radius:8px;padding:2.5rem 1.5rem;text-align:center;
+  /* display:block is load-bearing -- <label> is inline by default, and vertical
+     padding on an inline box does not expand its line box, so the dashed border
+     overflows and collides with whatever follows. */
+  .drop{display:block;width:100%;border:2px dashed var(--rule);border-radius:8px;
+    padding:2.5rem 1.5rem;text-align:center;
     background:var(--surface);cursor:pointer;transition:border-color .15s,background .15s}
   .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
   .drop strong{display:block;font-size:1.05rem;margin-bottom:.35rem}
@@ -76,7 +80,9 @@
   ported from Python. Try the same album on vinyl and streaming and compare.
 </p>
 
-<label class="drop" id="drop" for="file">
+<!-- The input is nested inside the label, which associates them implicitly.
+     Do NOT also add for="file" -- double association fires the picker twice. -->
+<label class="drop" id="drop">
   <strong>Drop an audio file here</strong>
   <span>or click to choose — WAV, FLAC, MP3, M4A. Large files take a moment to decode.</span>
   <input type="file" id="file" accept="audio/*">
