@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saurabh Singh — Data Engineer, Boston</title>
+<meta name="description" content="Data engineer in Boston. Pipelines, ML infrastructure, and applied deep learning on messy real-world audio and sensor data.">
+<meta property="og:title" content="Saurabh Singh — Data Engineer">
+<meta property="og:description" content="Pipelines, ML infrastructure, and applied deep learning on messy real-world audio.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◉</text></svg>">
+<style>
+  :root {
+    --bg: #fbf9f6;
+    --surface: #ffffff;
+    --ink: #1c1a17;
+    --ink-soft: #5a534a;
+    --ink-faint: #8b8177;
+    --rule: #e6e0d8;
+    --accent: #b5541f;
+    --accent-soft: #f3e6dc;
+    --max: 62rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #131211;
+      --surface: #1b1917;
+      --ink: #f0ece6;
+      --ink-soft: #b3aaa0;
+      --ink-faint: #837a71;
+      --rule: #2e2a26;
+      --accent: #e08a4c;
+      --accent-soft: #2a211a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131211; --surface: #1b1917; --ink: #f0ece6; --ink-soft: #b3aaa0;
+    --ink-faint: #837a71; --rule: #2e2a26; --accent: #e08a4c; --accent-soft: #2a211a;
+  }
+  :root[data-theme="light"] {
+    --bg: #fbf9f6; --surface: #ffffff; --ink: #1c1a17; --ink-soft: #5a534a;
+    --ink-faint: #8b8177; --rule: #e6e0d8; --accent: #b5541f; --accent-soft: #f3e6dc;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 17px/1.65 ui-sans-serif, -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+  /* ---- hero ---- */
+  header { padding: clamp(3rem, 9vw, 6rem) 0 clamp(2rem, 5vw, 3.5rem); }
+  .hero { display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center; }
+  @media (min-width: 800px) {
+    .hero { grid-template-columns: 1.35fr 1fr; gap: 4rem; }
+  }
+  .portrait {
+    width: 100%; max-width: 320px; height: auto; border-radius: 4px;
+    filter: saturate(0.95);
+    box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 12px 32px -12px rgba(0,0,0,.28);
+  }
+  @media (min-width: 800px) { .portrait { max-width: 100%; } }
+
+  h1 {
+    font: 500 clamp(2.4rem, 6vw, 3.6rem)/1.05 ui-serif, Georgia, "Times New Roman", serif;
+    letter-spacing: -0.02em; margin: 0 0 1.1rem;
+  }
+  .lede { font-size: clamp(1.05rem, 2.1vw, 1.2rem); color: var(--ink-soft); margin: 0 0 1.1rem; max-width: 34rem; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  .meta { display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; font-size: .93rem; color: var(--ink-faint); margin-top: 1.6rem; }
+  .meta a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 1px; }
+  .meta a:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ---- sections ---- */
+  section { padding: clamp(2.5rem, 6vw, 4rem) 0; border-top: 1px solid var(--rule); }
+  h2 {
+    font: 500 .8rem/1 ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--ink-faint);
+    margin: 0 0 2rem;
+  }
+  h3 { font: 500 1.22rem/1.3 ui-serif, Georgia, serif; margin: 0 0 .4rem; letter-spacing: -.01em; }
+  h3 a { color: var(--ink); text-decoration: none; }
+  h3 a:hover { color: var(--accent); }
+  p { margin: 0 0 1rem; }
+
+  .prose { max-width: 40rem; color: var(--ink-soft); }
+  .prose strong { color: var(--ink); font-weight: 500; }
+
+  /* ---- project cards ---- */
+  .projects { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+  .card { background: var(--surface); padding: 1.7rem 1.6rem; }
+  .card p { color: var(--ink-soft); margin-bottom: .9rem; font-size: .97rem; }
+  .tag {
+    display: inline-block; font-size: .68rem; letter-spacing: .09em; text-transform: uppercase;
+    font-weight: 600; padding: .22rem .5rem; border-radius: 3px; vertical-align: 3px; margin-left: .5rem;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .tag.done { background: transparent; color: var(--ink-faint); border: 1px solid var(--rule); }
+  .stack { font-size: .82rem; color: var(--ink-faint); letter-spacing: .01em; }
+  .result {
+    font: 500 .87rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink); background: var(--accent-soft);
+    padding: .55rem .75rem; border-radius: 4px; margin: 0 0 .9rem; display: inline-block;
+  }
+
+  /* ---- experience ---- */
+  .role { display: grid; grid-template-columns: 1fr; gap: .2rem 2rem; padding: 1.15rem 0; border-bottom: 1px solid var(--rule); }
+  .role:last-child { border-bottom: 0; }
+  @media (min-width: 700px) { .role { grid-template-columns: 1fr auto; align-items: baseline; } }
+  .role-title { font-weight: 500; }
+  .role-org { color: var(--ink-soft); }
+  .role-when { color: var(--ink-faint); font-size: .9rem; font-variant-numeric: tabular-nums; }
+
+  footer { padding: 3rem 0 4rem; border-top: 1px solid var(--rule); color: var(--ink-faint); font-size: .9rem; }
+  footer a { color: var(--ink-soft); }
+
+  .theme-toggle {
+    position: fixed; top: 1rem; right: 1rem; z-index: 10;
+    background: var(--surface); border: 1px solid var(--rule); color: var(--ink-soft);
+    border-radius: 999px; width: 34px; height: 34px; cursor: pointer; font-size: .9rem;
+    display: grid; place-items: center;
+  }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle colour theme">◐</button>
+
+<div class="wrap">
+
+  <header>
+    <div class="hero">
+      <div>
+        <h1>Saurabh Singh</h1>
+        <p class="lede">
+          Data engineer in Boston. I build the ingestion and transformation layers
+          that analytics and ML teams rely on — currently <strong>GCP, Snowflake,
+          and Airflow</strong>.
+        </p>
+        <p class="lede">
+          What I keep coming back to is machine learning on <strong>messy real-world
+          audio</strong>. Field recordings, sensor streams, industrial time series —
+          signal that arrives noisy, overlapping, and badly labelled. Most of my work
+          sits somewhere between a data pipeline and a spectrogram.
+        </p>
+        <div class="meta">
+          <span>📍 Boston, MA</span>
+          <a href="https://github.com/saurabhsingh3012">GitHub</a>
+          <a href="https://www.linkedin.com/in/saurabh-singh-768681179/">LinkedIn</a>
+          <a href="mailto:singh.saurabh3012@gmail.com">Email</a>
+        </div>
+      </div>
+      <img class="portrait" src="assets/saurabh.jpg" width="576" height="720"
+           alt="Saurabh Singh" loading="eager">
+    </div>
+  </header>
+
+  <section>
+    <h2>Currently building</h2>
+    <div class="projects">
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/turntable">turntable</a><span class="tag">In progress</span></h3>
+        <p>
+          A personal music data platform. Four music APIs that fundamentally disagree
+          about what an album <em>is</em> — Discogs thinks in physical pressings,
+          MusicBrainz in release groups, Last.fm in loose strings — resolved into one
+          dimensional warehouse. Entity resolution is the whole engineering problem.
+        </p>
+        <p class="result">precision 1.000 · recall 1.000 · 0 false merges · 90.1% comparison reduction</p>
+        <p class="stack">Python · Dagster · dbt · DuckDB · entity resolution</p>
+      </article>
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/pressing-matters">pressing-matters</a><span class="tag">In progress</span></h3>
+        <p>
+          Do different pressings of the same album actually sound different? Everyone
+          with a record collection has an opinion; almost nobody measures it. A
+          BS.1770 loudness and dynamics implementation, validated against signals with
+          analytically known answers, pointed at vinyl, CD, and streaming masters of
+          the same records.
+        </p>
+        <p class="result">9 validation checks vs theory · 0 failures</p>
+        <p class="stack">Python · NumPy · SciPy · ITU-R BS.1770-4 · EBU R128</p>
+      </article>
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/birdsong-robustness">birdsong-robustness</a><span class="tag">In progress</span></h3>
+        <p>
+          Published bird-song classifiers are evaluated on clean, curated recordings.
+          The field is wind, traffic, overlapping calls, and cheap microphones. This
+          measures how far they actually fall — a robustness benchmark across
+          controlled degradation axes.
+        </p>
+        <p class="stack">Python · TensorFlow · BirdNET · audio augmentation</p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Earlier work</h2>
+    <div class="projects">
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/bioacoustic-species-id">bioacoustic-species-id</a><span class="tag done">2023</span></h3>
+        <p>
+          Google MixIT source separation feeding Cornell's BirdNET classifier for
+          species identification from single-channel field recordings, with call-type
+          discrimination for population density estimation.
+        </p>
+        <p class="result">223 species · F0.5 0.815 vs 0.667 baseline</p>
+        <p class="stack">TensorFlow · MixIT · BirdNET · Boston University</p>
+      </article>
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/kubernetes-dependency-evolution">kubernetes-dependency-evolution</a><span class="tag done">2023</span></h3>
+        <p>
+          Compositional dependency evolution modelled across 236 Kubernetes releases in
+          a graph database, with a queryable CLI for tracing how vulnerabilities
+          propagate through the version graph. Mentored by Intel.
+        </p>
+        <p class="result">236 versions · Neo4j · CLI + API</p>
+        <p class="stack">Neo4j · Cypher · Python · Boston University</p>
+      </article>
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/visual-question-answering">visual-question-answering</a><span class="tag done">2023</span></h3>
+        <p>
+          PyTorch implementation of <em>Show, Ask, Attend and Answer</em> — ResNet-152
+          visual features, LSTM-encoded questions, multi-head attention over image
+          regions.
+        </p>
+        <p class="stack">PyTorch · ResNet · LSTM · attention</p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Experience</h2>
+
+    <div class="role">
+      <div>
+        <div class="role-title">Data Engineer</div>
+        <div class="role-org">Kosma Tech Inc — Boston, MA</div>
+      </div>
+      <div class="role-when">Mar 2024 — Present</div>
+    </div>
+
+    <div class="role">
+      <div>
+        <div class="role-title">Data Engineer</div>
+        <div class="role-org">Tata Projects Limited — Hyderabad, India</div>
+      </div>
+      <div class="role-when">Sep 2021 — Aug 2022</div>
+    </div>
+
+    <div class="role">
+      <div>
+        <div class="role-title">Engineering Analyst</div>
+        <div class="role-org">Bajaj Auto Limited — Mumbai, India</div>
+      </div>
+      <div class="role-when">Jun 2020 — May 2021</div>
+    </div>
+
+    <div class="role">
+      <div>
+        <div class="role-title">MS, Electrical &amp; Computer Engineering</div>
+        <div class="role-org">Boston University — Dean's Scholarship</div>
+      </div>
+      <div class="role-when">2022 — 2024</div>
+    </div>
+
+    <div class="role">
+      <div>
+        <div class="role-title">B.Tech, Electrical Engineering</div>
+        <div class="role-org">Indian Institute of Technology, Kharagpur</div>
+      </div>
+      <div class="role-when">2017 — 2021</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Off the clock</h2>
+    <div class="prose">
+      <p>
+        I collect records and go to more shows than is strictly reasonable. Two of the
+        projects above came directly out of that — <strong>turntable</strong> because
+        my collection data lived in four systems that refused to agree with each other,
+        and <strong>pressing-matters</strong> because I got tired of hearing that the
+        original pressing sounds warmer without anyone producing a number.
+      </p>
+      <p>
+        There's more overlap with the day job than it sounds. A bird call buried in
+        wind noise and a warehouse sensor drifting out of calibration are the same
+        problem wearing different clothes.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Boston, MA ·
+      <a href="mailto:singh.saurabh3012@gmail.com">singh.saurabh3012@gmail.com</a> ·
+      <a href="https://github.com/saurabhsingh3012">GitHub</a> ·
+      <a href="https://www.linkedin.com/in/saurabh-singh-768681179/">LinkedIn</a>
+    </p>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    var saved = null;
+    try { saved = localStorage.getItem('theme'); } catch (e) {}
+    if (saved) root.setAttribute('data-theme', saved);
+    btn.addEventListener('click', function () {
+      var current = root.getAttribute('data-theme');
+      if (!current) {
+        current = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      var next = current === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+  })();
+</script>
+
+</body>
+</html>
