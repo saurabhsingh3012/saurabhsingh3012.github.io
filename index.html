@@ -102,6 +102,12 @@
   }
   .tag.done { background: transparent; color: var(--ink-faint); border: 1px solid var(--rule); }
   .stack { font-size: .82rem; color: var(--ink-faint); letter-spacing: .01em; }
+  .demo {
+    display:inline-block; font-size:.85rem; font-weight:500; text-decoration:none;
+    color:var(--accent); border:1px solid var(--accent); border-radius:999px;
+    padding:.3rem .8rem; margin:0 0 .9rem;
+  }
+  .demo:hover { background:var(--accent); color:var(--bg); }
   .result {
     font: 500 .87rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
     color: var(--ink); background: var(--accent-soft);
@@ -174,6 +180,7 @@
           dimensional warehouse. Entity resolution is the whole engineering problem.
         </p>
         <p class="result">precision 1.000 · recall 1.000 · 0 false merges · 90.1% comparison reduction</p>
+        <p><a class="demo" href="demos/resolver/">▶ Try the resolver live</a></p>
         <p class="stack">Python · Dagster · dbt · DuckDB · entity resolution</p>
       </article>
 
@@ -187,6 +194,7 @@
           the same records.
         </p>
         <p class="result">9 validation checks vs theory · 0 failures</p>
+        <p><a class="demo" href="demos/loudness/">▶ Analyse your own audio</a></p>
         <p class="stack">Python · NumPy · SciPy · ITU-R BS.1770-4 · EBU R128</p>
       </article>
 

@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entity Resolution Playground — turntable</title>
+<meta name="description" content="Interactive demo: how do you tell whether two music records describe the same album?">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◉</text></svg>">
+<style>
+  :root {
+    --bg:#fbf9f6; --surface:#fff; --ink:#1c1a17; --ink-soft:#5a534a; --ink-faint:#8b8177;
+    --rule:#e6e0d8; --accent:#b5541f; --accent-soft:#f3e6dc;
+    --good:#2f7d4f; --good-soft:#e4f2e9; --warn:#9a6a12; --warn-soft:#faf0dc; --bad:#a33; --bad-soft:#f7e6e6;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#131211; --surface:#1b1917; --ink:#f0ece6; --ink-soft:#b3aaa0; --ink-faint:#837a71;
+    --rule:#2e2a26; --accent:#e08a4c; --accent-soft:#2a211a;
+    --good:#6cc48d; --good-soft:#1a2a20; --warn:#d9a441; --warn-soft:#2a2418; --bad:#e07070; --bad-soft:#2a1a1a;
+  }}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:400 16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Inter,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:60rem;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+  a{color:var(--accent)}
+  .back{font-size:.9rem;color:var(--ink-faint);text-decoration:none;display:inline-block;margin-bottom:2rem}
+  .back:hover{color:var(--accent)}
+  h1{font:500 clamp(1.9rem,5vw,2.6rem)/1.1 ui-serif,Georgia,serif;letter-spacing:-.02em;margin:0 0 .8rem}
+  .lede{color:var(--ink-soft);max-width:44rem;margin:0 0 1rem}
+  .note{font-size:.88rem;color:var(--ink-faint);max-width:44rem;margin:0 0 2.5rem}
+
+  .presets{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem}
+  .preset{background:var(--surface);border:1px solid var(--rule);color:var(--ink-soft);
+    border-radius:999px;padding:.4rem .85rem;font-size:.85rem;cursor:pointer;font-family:inherit}
+  .preset:hover{border-color:var(--accent);color:var(--accent)}
+
+  .panes{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+  @media(min-width:720px){.panes{grid-template-columns:1fr 1fr}}
+  .pane{background:var(--surface);padding:1.3rem}
+  .pane h2{font:600 .72rem/1 ui-sans-serif,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-faint);margin:0 0 1rem}
+  label{display:block;font-size:.78rem;color:var(--ink-faint);margin:.75rem 0 .25rem;letter-spacing:.02em}
+  input{width:100%;background:var(--bg);border:1px solid var(--rule);color:var(--ink);
+    border-radius:4px;padding:.5rem .6rem;font:inherit;font-size:.92rem}
+  input:focus{outline:none;border-color:var(--accent)}
+
+  .verdict{margin-top:1.75rem;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--surface)}
+  .verdict-head{padding:1.3rem;display:flex;flex-wrap:wrap;align-items:baseline;gap:.75rem 1.5rem;border-bottom:1px solid var(--rule)}
+  .score{font:600 2.6rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.02em}
+  .badge{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    padding:.32rem .7rem;border-radius:3px}
+  .badge.accept{background:var(--good-soft);color:var(--good)}
+  .badge.review{background:var(--warn-soft);color:var(--warn)}
+  .badge.reject{background:var(--bad-soft);color:var(--bad)}
+  .verdict-why{font-size:.9rem;color:var(--ink-soft);flex:1 1 16rem}
+
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:left;padding:.6rem 1.3rem;border-bottom:1px solid var(--rule)}
+  th{font:600 .7rem/1 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+  td.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+  .bar{height:5px;border-radius:3px;background:var(--rule);position:relative;min-width:70px}
+  .bar span{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:3px}
+  .dropped{color:var(--ink-faint);font-style:italic}
+  .notes{padding:1rem 1.3rem;font-size:.87rem;color:var(--ink-soft);background:var(--accent-soft)}
+  .notes div{margin:.2rem 0}
+  .notes:empty{display:none}
+  footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--rule);font-size:.87rem;color:var(--ink-faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="../../">← Saurabh Singh</a>
+
+<h1>Are these the same album?</h1>
+<p class="lede">
+  Discogs, MusicBrainz, Last.fm and Spotify all describe records differently — and
+  string matching fails immediately. <em>In Rainbows</em> and <em>In Rainbows (2007
+  Remaster)</em> are one album; Weezer's <em>Blue</em> and <em>Green</em> albums are
+  two, and share a title, an artist, and a track count.
+</p>
+<p class="note">
+  This is the scorer from <a href="https://github.com/saurabhsingh3012/turntable">turntable</a>,
+  ported to JavaScript and running entirely in your browser. Edit anything below and
+  watch the score move. Try the presets first.
+</p>
+
+<div class="presets" id="presets"></div>
+
+<div class="panes">
+  <div class="pane">
+    <h2>Record A</h2>
+    <label for="a-title">Title</label><input id="a-title">
+    <label for="a-artist">Artist</label><input id="a-artist">
+    <label for="a-year">Year</label><input id="a-year" inputmode="numeric">
+    <label for="a-tracks">Track count</label><input id="a-tracks" inputmode="numeric">
+    <label for="a-dur">Total runtime (seconds)</label><input id="a-dur" inputmode="numeric">
+    <label for="a-cat">Catalogue number</label><input id="a-cat">
+  </div>
+  <div class="pane">
+    <h2>Record B</h2>
+    <label for="b-title">Title</label><input id="b-title">
+    <label for="b-artist">Artist</label><input id="b-artist">
+    <label for="b-year">Year</label><input id="b-year" inputmode="numeric">
+    <label for="b-tracks">Track count</label><input id="b-tracks" inputmode="numeric">
+    <label for="b-dur">Total runtime (seconds)</label><input id="b-dur" inputmode="numeric">
+    <label for="b-cat">Catalogue number</label><input id="b-cat">
+  </div>
+</div>
+
+<div class="verdict">
+  <div class="verdict-head">
+    <div class="score" id="score">—</div>
+    <div class="badge" id="badge">—</div>
+    <div class="verdict-why" id="why"></div>
+  </div>
+  <table>
+    <thead><tr><th>Feature</th><th>Similarity</th><th>Weight</th><th></th></tr></thead>
+    <tbody id="features"></tbody>
+  </table>
+  <div class="notes" id="notes"></div>
+</div>
+
+<footer>
+  Thresholds: accept ≥ 0.85, reject &lt; 0.55, anything between goes to human review.
+  Full implementation and its evaluation in
+  <a href="https://github.com/saurabhsingh3012/turntable">saurabhsingh3012/turntable</a>.
+</footer>
+
+</div>
+
+<script>
+// ---- Ported from turntable/src/turntable/resolve/ ------------------------
+const WEIGHTS = { title:0.40, artist:0.25, track_count:0.15, duration:0.10, year:0.10 };
+const AUTO_ACCEPT = 0.85, AUTO_REJECT = 0.55;
+const CAT_MATCH = 0.97;
+const DUR_CONTRA_THRESHOLD = 0.25, DUR_CONTRA_PENALTY = 0.75;
+
+const NOISE = ["deluxe edition","expanded edition","special edition","limited edition",
+  "collector's edition","anniversary edition","remastered version","digital remaster",
+  "bonus track version","deluxe version","original soundtrack","mono version",
+  "stereo version","remastered","remaster","reissue","explicit","clean"];
+
+function foldUnicode(s){ return s.normalize("NFKD").replace(/[̀-ͯ]/g,""); }
+
+function isNoiseAnnotation(inner){
+  const c = inner.trim().toLowerCase();
+  if(!c) return true;
+  if(NOISE.some(p=>c.includes(p))) return true;
+  if(/^(19|20)\d{2}$/.test(c)) return true;
+  if(["vinyl","cd","digital","cassette","lp","ep","single"].includes(c)) return true;
+  return false;
+}
+
+function normalizeTitle(t){
+  if(!t) return "";
+  let s = foldUnicode(t);
+  s = s.replace(/[\(\[]([^\)\]]*)[\)\]]/g,(m,inner)=> isNoiseAnnotation(inner) ? "" : m);
+  s = s.replace(/\b(disc|disk|cd|lp|side)\s*[\divx]+\b/gi," ");
+  for(const p of NOISE) s = s.replace(new RegExp("\\b"+p.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","gi")," ");
+  s = s.replace(/[^\w\s]/g," ").replace(/\s+/g," ");
+  return s.trim().toLowerCase();
+}
+
+function normalizeArtist(a){
+  if(!a) return "";
+  let s = a.replace(/\s*\(\d+\)\s*$/,"");
+  s = foldUnicode(s).trim().replace(/^the\s+/i,"");
+  s = s.replace(/[^\w\s]/g," ").replace(/\s+/g," ");
+  return s.trim().toLowerCase();
+}
+
+function jaroWinkler(s1,s2,pw=0.1){
+  if(s1===s2) return 1;
+  if(!s1||!s2) return 0;
+  const win = Math.max(Math.floor(Math.max(s1.length,s2.length)/2)-1,0);
+  const m1 = new Array(s1.length).fill(false), m2 = new Array(s2.length).fill(false);
+  let matches=0;
+  for(let i=0;i<s1.length;i++){
+    const start=Math.max(0,i-win), end=Math.min(i+win+1,s2.length);
+    for(let j=start;j<end;j++){
+      if(m2[j]||s2[j]!==s1[i]) continue;
+      m1[i]=m2[j]=true; matches++; break;
+    }
+  }
+  if(!matches) return 0;
+  let trans=0,k=0;
+  for(let i=0;i<s1.length;i++){
+    if(!m1[i]) continue;
+    while(!m2[k]) k++;
+    if(s1[i]!==s2[k]) trans++;
+    k++;
+  }
+  trans=Math.floor(trans/2);
+  const jaro=(matches/s1.length + matches/s2.length + (matches-trans)/matches)/3;
+  let prefix=0;
+  for(let i=0;i<Math.min(4,s1.length,s2.length);i++){ if(s1[i]!==s2[i]) break; prefix++; }
+  return jaro + prefix*pw*(1-jaro);
+}
+
+function trackCountSim(a,b){
+  if(a==null||b==null) return null;
+  if(a===b) return 1;
+  const d=Math.abs(a-b);
+  if(d<=2) return 0.7;
+  if(d<=4) return 0.3;
+  return 0;
+}
+function durationSim(a,b){
+  if(!a||!b) return null;
+  const rd=Math.abs(a-b)/Math.max(a,b);
+  if(rd<=0.05) return 1;
+  if(rd<=0.15) return 0.6;
+  if(rd<=0.30) return 0.2;
+  return 0;
+}
+function yearSim(a,b){
+  if(a==null||b==null) return null;
+  const d=Math.abs(a-b);
+  if(d===0) return 1;
+  if(d<=2) return 0.8;
+  if(d<=10) return 0.5;
+  return 0.3;
+}
+
+function scorePair(L,R){
+  const out={score:0,features:{},dropped:[],notes:[],shortCircuit:false};
+  const lc=(L.cat||"").replace(/\s/g,"").toUpperCase();
+  const rc=(R.cat||"").replace(/\s/g,"").toUpperCase();
+  if(lc&&rc&&lc===rc){
+    out.score=CAT_MATCH; out.shortCircuit=true;
+    out.notes.push("Catalogue number exact match ("+lc+") — near-conclusive, short-circuited.");
+    return out;
+  }
+  const raw={
+    title: jaroWinkler(normalizeTitle(L.title), normalizeTitle(R.title)),
+    artist: jaroWinkler(normalizeArtist(L.artist), normalizeArtist(R.artist)),
+    track_count: trackCountSim(L.tracks,R.tracks),
+    duration: durationSim(L.dur,R.dur),
+    year: yearSim(L.year,R.year)
+  };
+  let totalW=0, sum=0;
+  for(const k in raw){
+    if(raw[k]==null){ out.dropped.push(k); continue; }
+    out.features[k]=raw[k]; totalW+=WEIGHTS[k]; sum+=WEIGHTS[k]*raw[k];
+  }
+  if(!totalW){ out.notes.push("No comparable features."); return out; }
+  let score = sum/totalW;
+
+  if(out.dropped.length) out.notes.push("Unavailable, weights renormalised: "+out.dropped.join(", ")+". Missing data is not evidence of mismatch.");
+
+  if(L.dur&&R.dur){
+    const rd=Math.abs(L.dur-R.dur)/Math.max(L.dur,R.dur);
+    if(rd>DUR_CONTRA_THRESHOLD){
+      score*=DUR_CONTRA_PENALTY;
+      out.notes.push("Runtime contradiction: "+Math.round(rd*100)+"% apart ("+L.dur+"s vs "+R.dur+"s) — score damped 25%. This veto exists because self-titled albums were auto-merging.");
+    }
+  }
+  if(lc&&rc&&lc!==rc) out.notes.push("Catalogue numbers differ — expected across pressings, not penalised.");
+  out.score=score;
+  return out;
+}
+
+// ---- UI -----------------------------------------------------------------
+const PRESETS=[
+  {name:"Remaster, 9 years apart",
+   a:{title:"In Rainbows",artist:"Radiohead",year:2007,tracks:10,dur:2559,cat:"XLLP 324"},
+   b:{title:"In Rainbows (2016 Remaster)",artist:"Radiohead",year:2016,tracks:10,dur:2559,cat:""}},
+  {name:"Weezer Blue vs Green ⚠",
+   a:{title:"Weezer",artist:"Weezer",year:1994,tracks:10,dur:2610,cat:""},
+   b:{title:"Weezer",artist:"Weezer",year:2001,tracks:10,dur:1770,cat:""}},
+  {name:"38-year reissue gap",
+   a:{title:"The Dark Side Of The Moon",artist:"Pink Floyd",year:1973,tracks:10,dur:2569,cat:"SHVL 804"},
+   b:{title:"The Dark Side of the Moon [Remastered]",artist:"Pink Floyd",year:2011,tracks:10,dur:2572,cat:""}},
+  {name:"Sparse Last.fm record",
+   a:{title:"Homogenic",artist:"Björk",year:1997,tracks:10,dur:2622,cat:"ELEKTRA 62061"},
+   b:{title:"Homogenic",artist:"Bjork",year:null,tracks:null,dur:null,cat:""}},
+  {name:"Catalogue number match",
+   a:{title:"In Rainbows",artist:"Radiohead",year:2007,tracks:10,dur:2559,cat:"XLLP 324"},
+   b:{title:"In Rainbows",artist:"Radiohead",year:2007,tracks:10,dur:2559,cat:"XLLP324"}},
+  {name:"Studio vs live",
+   a:{title:"Rumours",artist:"Fleetwood Mac",year:1977,tracks:11,dur:2359,cat:"BSK 3010"},
+   b:{title:"Rumours Live",artist:"Fleetwood Mac",year:2023,tracks:13,dur:2890,cat:""}},
+  {name:"Deluxe edition",
+   a:{title:"Discovery",artist:"Daft Punk",year:2001,tracks:14,dur:3654,cat:""},
+   b:{title:"Discovery (Deluxe Edition)",artist:"Daft Punk",year:2001,tracks:16,dur:4180,cat:""}}
+];
+
+const $=id=>document.getElementById(id);
+const FIELDS=["title","artist","year","tracks","dur","cat"];
+
+function readSide(p){
+  const num=v=>{const n=parseInt(v,10);return isNaN(n)?null:n;};
+  return {
+    title:$(p+"-title").value, artist:$(p+"-artist").value,
+    year:num($(p+"-year").value), tracks:num($(p+"-tracks").value),
+    dur:num($(p+"-dur").value), cat:$(p+"-cat").value
+  };
+}
+function writeSide(p,rec){
+  $(p+"-title").value=rec.title??""; $(p+"-artist").value=rec.artist??"";
+  $(p+"-year").value=rec.year??""; $(p+"-tracks").value=rec.tracks??"";
+  $(p+"-dur").value=rec.dur??""; $(p+"-cat").value=rec.cat??"";
+}
+
+function render(){
+  const r=scorePair(readSide("a"),readSide("b"));
+  const verdict = r.score>=AUTO_ACCEPT ? "accept" : (r.score<AUTO_REJECT ? "reject" : "review");
+  $("score").textContent=r.score.toFixed(3);
+  const badge=$("badge");
+  badge.textContent = verdict==="accept"?"Same album":(verdict==="review"?"Human review":"Different");
+  badge.className="badge "+verdict;
+  $("why").textContent = verdict==="accept"
+    ? "Auto-merged into one album."
+    : verdict==="review" ? "Too close to call — queued for a person to adjudicate rather than guessed at."
+    : "Kept as separate albums.";
+
+  const tb=$("features"); tb.innerHTML="";
+  if(r.shortCircuit){
+    tb.innerHTML='<tr><td colspan="4" class="dropped">Short-circuited on catalogue number — no feature scoring needed.</td></tr>';
+  } else {
+    for(const k of ["title","artist","track_count","duration","year"]){
+      const tr=document.createElement("tr");
+      if(k in r.features){
+        const v=r.features[k];
+        tr.innerHTML='<td>'+k.replace("_"," ")+'</td><td class="num">'+v.toFixed(3)+
+          '</td><td class="num">'+WEIGHTS[k].toFixed(2)+
+          '</td><td><div class="bar"><span style="width:'+(v*100).toFixed(0)+'%"></span></div></td>';
+      } else {
+        tr.innerHTML='<td>'+k.replace("_"," ")+'</td><td colspan="3" class="dropped">not available — dropped, weights renormalised</td>';
+      }
+      tb.appendChild(tr);
+    }
+  }
+  $("notes").innerHTML = r.notes.map(n=>"<div>"+n+"</div>").join("");
+}
+
+const pc=$("presets");
+PRESETS.forEach((p,i)=>{
+  const b=document.createElement("button");
+  b.className="preset"; b.textContent=p.name;
+  b.onclick=()=>{writeSide("a",p.a);writeSide("b",p.b);render();};
+  pc.appendChild(b);
+});
+for(const side of ["a","b"]) for(const f of FIELDS) $(side+"-"+f).addEventListener("input",render);
+writeSide("a",PRESETS[0].a); writeSide("b",PRESETS[0].b); render();
+</script>
+</body>
+</html>

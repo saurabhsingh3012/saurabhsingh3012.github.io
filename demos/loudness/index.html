@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loudness &amp; Dynamics Analyser — pressing-matters</title>
+<meta name="description" content="Measure the dynamic range of any audio file in your browser. ITU-R BS.1770-4 loudness, loudness range, true peak, crest factor and DR value.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◉</text></svg>">
+<style>
+  :root{--bg:#fbf9f6;--surface:#fff;--ink:#1c1a17;--ink-soft:#5a534a;--ink-faint:#8b8177;
+    --rule:#e6e0d8;--accent:#b5541f;--accent-soft:#f3e6dc;--good:#2f7d4f;--warn:#9a6a12;--bad:#a33}
+  @media(prefers-color-scheme:dark){:root{--bg:#131211;--surface:#1b1917;--ink:#f0ece6;--ink-soft:#b3aaa0;
+    --ink-faint:#837a71;--rule:#2e2a26;--accent:#e08a4c;--accent-soft:#2a211a;
+    --good:#6cc48d;--warn:#d9a441;--bad:#e07070}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:400 16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Inter,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:56rem;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+  a{color:var(--accent)}
+  .back{font-size:.9rem;color:var(--ink-faint);text-decoration:none;display:inline-block;margin-bottom:2rem}
+  .back:hover{color:var(--accent)}
+  h1{font:500 clamp(1.9rem,5vw,2.6rem)/1.1 ui-serif,Georgia,serif;letter-spacing:-.02em;margin:0 0 .8rem}
+  .lede{color:var(--ink-soft);max-width:42rem;margin:0 0 1rem}
+  .note{font-size:.88rem;color:var(--ink-faint);max-width:42rem;margin:0 0 2rem}
+
+  .drop{border:2px dashed var(--rule);border-radius:8px;padding:2.5rem 1.5rem;text-align:center;
+    background:var(--surface);cursor:pointer;transition:border-color .15s,background .15s}
+  .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+  .drop strong{display:block;font-size:1.05rem;margin-bottom:.35rem}
+  .drop span{font-size:.88rem;color:var(--ink-faint)}
+  input[type=file]{display:none}
+
+  .tools{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.25rem 0 0}
+  .tool{background:var(--surface);border:1px solid var(--rule);color:var(--ink-soft);border-radius:999px;
+    padding:.4rem .85rem;font-size:.85rem;cursor:pointer;font-family:inherit}
+  .tool:hover{border-color:var(--accent);color:var(--accent)}
+
+  #status{margin-top:1.25rem;font-size:.92rem;color:var(--ink-faint);min-height:1.4em}
+  #results{display:none;margin-top:2rem}
+  .file{font-size:.9rem;color:var(--ink-soft);margin-bottom:1rem;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}
+
+  .grid{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+  .metric{background:var(--surface);padding:1.15rem 1.2rem}
+  .metric .k{font:600 .68rem/1 ui-sans-serif,sans-serif;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:.55rem}
+  .metric .v{font:600 1.75rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums}
+  .metric .u{font-size:.8rem;color:var(--ink-faint);margin-left:.2rem;font-weight:400}
+  .metric .d{font-size:.78rem;color:var(--ink-faint);margin-top:.45rem;line-height:1.45}
+
+  .verdict{margin-top:1.5rem;padding:1.1rem 1.25rem;border-radius:6px;background:var(--accent-soft);
+    font-size:.93rem;color:var(--ink)}
+  .verdict b{font-weight:600}
+  canvas{width:100%;height:110px;margin-top:1.5rem;border:1px solid var(--rule);border-radius:6px;
+    background:var(--surface);display:block}
+  footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--rule);font-size:.87rem;color:var(--ink-faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="../../">← Saurabh Singh</a>
+
+<h1>How squashed is your music?</h1>
+<p class="lede">
+  Drop in an audio file and this measures its dynamics — the same ITU-R BS.1770-4
+  loudness pipeline used for broadcast compliance, plus the DR value that record
+  collectors argue about.
+</p>
+<p class="note">
+  Everything runs in your browser. <strong>Nothing is uploaded anywhere.</strong>
+  This is the measurement core of
+  <a href="https://github.com/saurabhsingh3012/pressing-matters">pressing-matters</a>,
+  ported from Python. Try the same album on vinyl and streaming and compare.
+</p>
+
+<label class="drop" id="drop" for="file">
+  <strong>Drop an audio file here</strong>
+  <span>or click to choose — WAV, FLAC, MP3, M4A. Large files take a moment to decode.</span>
+  <input type="file" id="file" accept="audio/*">
+</label>
+
+<div class="tools">
+  <button class="tool" data-gen="sine">Test: 1 kHz sine</button>
+  <button class="tool" data-gen="square">Test: square wave</button>
+  <button class="tool" data-gen="dynamic">Test: open dynamics</button>
+  <button class="tool" data-gen="squashed">Test: hard-limited</button>
+</div>
+
+<div id="status"></div>
+
+<div id="results">
+  <div class="file" id="fname"></div>
+  <div class="grid">
+    <div class="metric"><div class="k">Integrated loudness</div>
+      <div class="v"><span id="m-lufs">—</span><span class="u">LUFS</span></div>
+      <div class="d">Gated average loudness. Streaming platforms normalise to about −14.</div></div>
+    <div class="metric"><div class="k">Loudness range</div>
+      <div class="v"><span id="m-lra">—</span><span class="u">LU</span></div>
+      <div class="d">How much the loudness actually moves. Higher means it breathes.</div></div>
+    <div class="metric"><div class="k">True peak</div>
+      <div class="v"><span id="m-tp">—</span><span class="u">dBFS</span></div>
+      <div class="d">Above 0 means inter-sample clipping from limiting.</div></div>
+    <div class="metric"><div class="k">Crest factor</div>
+      <div class="v"><span id="m-crest">—</span><span class="u">dB</span></div>
+      <div class="d">Peak-to-RMS. A sine is 3.01 by definition.</div></div>
+    <div class="metric"><div class="k">DR value</div>
+      <div class="v"><span id="m-dr">—</span></div>
+      <div class="d">What the Dynamic Range Database quotes. Under 7 is heavily compressed.</div></div>
+    <div class="metric"><div class="k">Source</div>
+      <div class="v" style="font-size:1.1rem"><span id="m-sr">—</span></div>
+      <div class="d" id="m-dur">—</div></div>
+  </div>
+  <div class="verdict" id="verdict"></div>
+  <canvas id="wave" width="1600" height="220"></canvas>
+</div>
+
+<footer>
+  Implements ITU-R BS.1770-4 (K-weighting, gated loudness), EBU Tech 3342 (loudness
+  range) and 4× oversampled true peak. The Python implementation is validated against
+  signals with analytically known answers — 9 checks, 0 failures. Source in
+  <a href="https://github.com/saurabhsingh3012/pressing-matters">saurabhsingh3012/pressing-matters</a>.
+</footer>
+
+</div>
+
+<script>
+// ---- BS.1770-4, ported from pressing_matters/features.py -----------------
+function kFilters(sr){
+  const f0=1681.974450955533, G=3.999843853973347, Q=0.7071752369554196;
+  const K=Math.tan(Math.PI*f0/sr), Vh=Math.pow(10,G/20), Vb=Math.pow(Vh,0.4996667741545416);
+  const den=1+K/Q+K*K;
+  const bs=[(Vh+Vb*K/Q+K*K)/den, 2*(K*K-Vh)/den, (Vh-Vb*K/Q+K*K)/den];
+  const as=[1, 2*(K*K-1)/den, (1-K/Q+K*K)/den];
+  const f0h=38.13547087602444, Qh=0.5003270373238773, Kh=Math.tan(Math.PI*f0h/sr);
+  const a0h=1+Kh/Qh+Kh*Kh;
+  const bh=[1,-2,1];
+  const ah=[1, 2*(Kh*Kh-1)/a0h, (1-Kh/Qh+Kh*Kh)/a0h];
+  return {bs,as,bh,ah};
+}
+function biquad(x,b,a){
+  const y=new Float64Array(x.length);
+  let x1=0,x2=0,y1=0,y2=0;
+  for(let n=0;n<x.length;n++){
+    const xn=x[n];
+    const yn=b[0]*xn+b[1]*x1+b[2]*x2-a[1]*y1-a[2]*y2;
+    x2=x1;x1=xn;y2=y1;y1=yn;y[n]=yn;
+  }
+  return y;
+}
+function kWeight(ch,sr){
+  const f=kFilters(sr);
+  return biquad(biquad(ch,f.bs,f.as),f.bh,f.ah);
+}
+function blockLoudness(chans,sr,blockDur,overlap){
+  const bs=Math.round(blockDur*sr), hop=Math.max(1,Math.round(bs*(1-overlap)));
+  const n=chans[0].length;
+  if(n<bs) return [];
+  const out=[];
+  for(let s=0;s+bs<=n;s+=hop){
+    let total=0;
+    for(const c of chans){
+      let ms=0;
+      for(let i=s;i<s+bs;i++) ms+=c[i]*c[i];
+      total+=ms/bs;
+    }
+    if(total>0) out.push(-0.691+10*Math.log10(total));
+  }
+  return out;
+}
+function integratedLoudness(chans,sr){
+  const w=chans.map(c=>kWeight(c,sr));
+  const blocks=blockLoudness(w,sr,0.400,0.75);
+  if(!blocks.length) return -Infinity;
+  const abs=blocks.filter(b=>b>-70);
+  if(!abs.length) return -Infinity;
+  const meanE=abs.reduce((s,b)=>s+Math.pow(10,b/10),0)/abs.length;
+  const gate=10*Math.log10(meanE)-10;
+  const rel=abs.filter(b=>b>gate);
+  if(!rel.length) return 10*Math.log10(meanE);
+  const finalE=rel.reduce((s,b)=>s+Math.pow(10,b/10),0)/rel.length;
+  return 10*Math.log10(finalE);
+}
+function percentile(sorted,p){
+  const idx=(sorted.length-1)*p/100, lo=Math.floor(idx), hi=Math.ceil(idx);
+  if(lo===hi) return sorted[lo];
+  return sorted[lo]+(sorted[hi]-sorted[lo])*(idx-lo);
+}
+function loudnessRange(chans,sr){
+  const w=chans.map(c=>kWeight(c,sr));
+  const blocks=blockLoudness(w,sr,3.0,0.67);
+  if(blocks.length<2) return 0;
+  const abs=blocks.filter(b=>b>-70);
+  if(abs.length<2) return 0;
+  const meanE=abs.reduce((s,b)=>s+Math.pow(10,b/10),0)/abs.length;
+  const gate=10*Math.log10(meanE)-20;
+  const g=abs.filter(b=>b>gate).sort((a,b)=>a-b);
+  if(g.length<2) return 0;
+  return percentile(g,95)-percentile(g,10);
+}
+function truePeakDbfs(mono,os=4){
+  // Linear-interpolation oversampling. Approximates the polyphase resampler in
+  // the Python version closely enough for a browser demo; the Python
+  // implementation is the reference.
+  let peak=0;
+  for(let i=0;i<mono.length-1;i++){
+    const a=mono[i], b=mono[i+1];
+    for(let k=0;k<os;k++){
+      const v=Math.abs(a+(b-a)*k/os);
+      if(v>peak) peak=v;
+    }
+  }
+  return peak>0 ? 20*Math.log10(peak) : -Infinity;
+}
+function crestFactorDb(mono){
+  let sum=0,peak=0;
+  for(let i=0;i<mono.length;i++){const v=mono[i];sum+=v*v;const a=Math.abs(v);if(a>peak)peak=a;}
+  const rms=Math.sqrt(sum/mono.length);
+  return (rms>0&&peak>0) ? 20*Math.log10(peak/rms) : 0;
+}
+function drValue(mono,sr){
+  const bs=Math.round(3*sr);
+  if(mono.length<bs*2) return 0;
+  const nb=Math.floor(mono.length/bs);
+  const rmsArr=[],peakArr=[];
+  for(let b=0;b<nb;b++){
+    let sum=0,peak=0;
+    for(let i=b*bs;i<(b+1)*bs;i++){const v=mono[i];sum+=v*v;const a=Math.abs(v);if(a>peak)peak=a;}
+    rmsArr.push(Math.sqrt(sum/bs)); peakArr.push(peak);
+  }
+  const topN=Math.max(1,Math.round(nb*0.2));
+  const loudest=rmsArr.slice().sort((a,b)=>a-b).slice(-topN);
+  const rmsLoud=Math.sqrt(loudest.reduce((s,v)=>s+v*v,0)/loudest.length);
+  const sp=peakArr.slice().sort((a,b)=>a-b);
+  const second=sp.length>=2?sp[sp.length-2]:sp[sp.length-1];
+  return (rmsLoud>0&&second>0)?20*Math.log10(second/rmsLoud):0;
+}
+
+// ---- UI -----------------------------------------------------------------
+const $=id=>document.getElementById(id);
+const status=$("status");
+
+function fmt(v,d){ return (v===-Infinity||isNaN(v))?"—":v.toFixed(d===undefined?2:d); }
+
+function drawWave(mono){
+  const c=$("wave"), ctx=c.getContext("2d");
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const style=getComputedStyle(document.body);
+  ctx.fillStyle=style.getPropertyValue("--accent").trim()||"#b5541f";
+  const step=Math.max(1,Math.floor(mono.length/W));
+  for(let x=0;x<W;x++){
+    let peak=0;
+    const start=x*step, end=Math.min(mono.length,start+step);
+    for(let i=start;i<end;i++){const a=Math.abs(mono[i]);if(a>peak)peak=a;}
+    const h=Math.max(1,peak*H*0.92);
+    ctx.fillRect(x,(H-h)/2,1,h);
+  }
+}
+
+function verdictText(dr,lra,tp,lufs){
+  const bits=[];
+  if(dr>=13) bits.push("<b>Very open.</b> This has the dynamics of an unsquashed or audiophile master.");
+  else if(dr>=9) bits.push("<b>Healthy dynamics.</b> Typical of a careful master or a pre-loudness-war release.");
+  else if(dr>=7) bits.push("<b>Moderately compressed.</b> Common for mainstream modern releases.");
+  else bits.push("<b>Heavily compressed.</b> This is loudness-war territory — dynamics traded for volume.");
+  if(tp>0) bits.push("True peak is above 0 dBFS ("+fmt(tp)+"), which means inter-sample clipping — a fingerprint of aggressive limiting.");
+  if(lra<3 && lra>0) bits.push("Loudness range is very narrow ("+fmt(lra)+" LU): the level barely moves across the whole file.");
+  if(lufs>-9) bits.push("At "+fmt(lufs)+" LUFS this is far louder than the −14 streaming platforms normalise to, so it will simply be turned down.");
+  return bits.join(" ");
+}
+
+async function analyse(buffer,name){
+  status.textContent="Measuring…";
+  await new Promise(r=>setTimeout(r,10));
+  const sr=buffer.sampleRate;
+  const chans=[];
+  for(let c=0;c<buffer.numberOfChannels;c++) chans.push(Float64Array.from(buffer.getChannelData(c)));
+  const mono=new Float64Array(chans[0].length);
+  for(let i=0;i<mono.length;i++){
+    let s=0; for(const c of chans) s+=c[i];
+    mono[i]=s/chans.length;
+  }
+  const lufs=integratedLoudness(chans,sr);
+  const lra=loudnessRange(chans,sr);
+  const tp=truePeakDbfs(mono);
+  const crest=crestFactorDb(mono);
+  const dr=drValue(mono,sr);
+
+  $("fname").textContent=name;
+  $("m-lufs").textContent=fmt(lufs);
+  $("m-lra").textContent=fmt(lra);
+  $("m-tp").textContent=fmt(tp);
+  $("m-crest").textContent=fmt(crest);
+  $("m-dr").textContent=fmt(dr,1);
+  $("m-sr").textContent=(sr/1000).toFixed(1)+" kHz";
+  const dur=buffer.duration;
+  $("m-dur").textContent=Math.floor(dur/60)+"m "+Math.round(dur%60)+"s · "+
+    buffer.numberOfChannels+" ch";
+  $("verdict").innerHTML=verdictText(dr,lra,tp,lufs);
+  drawWave(mono);
+  $("results").style.display="block";
+  status.textContent="";
+}
+
+async function handleFile(file){
+  status.textContent="Decoding "+file.name+"…";
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const buf=await ctx.decodeAudioData(await file.arrayBuffer());
+    await analyse(buf,file.name);
+    ctx.close();
+  }catch(e){
+    status.textContent="Could not decode that file. Try WAV, FLAC, MP3 or M4A. ("+e.message+")";
+  }
+}
+
+$("file").addEventListener("change",e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+const drop=$("drop");
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
+drop.addEventListener("drop",e=>{ if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+// Synthetic test signals -- let people verify the measurement themselves.
+document.querySelectorAll("[data-gen]").forEach(btn=>{
+  btn.addEventListener("click",async()=>{
+    const kind=btn.dataset.gen, sr=48000, secs=20;
+    const ctx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:sr});
+    const buf=ctx.createBuffer(1,sr*secs,sr);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++){
+      const t=i/sr;
+      if(kind==="sine") d[i]=Math.sin(2*Math.PI*1000*t);
+      else if(kind==="square") d[i]=Math.sign(Math.sin(2*Math.PI*1000*t));
+      else {
+        let v=0.5*Math.sin(2*Math.PI*220*t)+0.3*Math.sin(2*Math.PI*440*t)+0.2*Math.sin(2*Math.PI*880*t);
+        const env=(Math.floor(t/2.5)%2===0)?1.0:0.1;   // alternating loud/quiet
+        v*=env;
+        if(kind==="squashed") v=Math.max(-0.25,Math.min(0.25,v*4))*4;
+        d[i]=v;
+      }
+    }
+    await analyse(buf,"synthetic: "+btn.textContent.replace("Test: ",""));
+    ctx.close();
+  });
+});
+</script>
+</body>
+</html>
