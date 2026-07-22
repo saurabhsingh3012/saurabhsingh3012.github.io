@@ -250,7 +250,50 @@
           measures how far they actually fall — a robustness benchmark across
           controlled degradation axes.
         </p>
-        <p class="stack">Python · TensorFlow · BirdNET · audio augmentation</p>
+        <p class="stack">Python · NumPy · SciPy · signal processing</p>
+      </article>
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/audio-fingerprint">audio-fingerprint</a><span class="tag">In progress</span></h3>
+        <p>
+          Shazam-style acoustic fingerprinting from scratch — spectrogram peak
+          constellations, hashed and matched by time-offset voting. Identifies a
+          recording from a short, noisy excerpt.
+        </p>
+        <p class="result">top-1 = 1.000 down to 0 dB SNR · 0% false-accept at operating point</p>
+        <p class="stack">Python · NumPy · SciPy · inverted-index retrieval</p>
+      </article>
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/audio-ssl">audio-ssl</a><span class="tag">In progress</span></h3>
+        <p>
+          Self-supervised contrastive pretraining for audio, evaluated by linear
+          probing — with the encoder's forward <em>and</em> backward passes written by
+          hand in NumPy and gradient-checked against autograd.
+        </p>
+        <p class="result">~20× label efficiency: SSL at 5 labels/class beats raw at 100</p>
+        <p class="stack">Python · NumPy · contrastive learning · NT-Xent</p>
+      </article>
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/setlist-prophet">setlist-prophet</a><span class="tag">In progress</span></h3>
+        <p>
+          Predicting which songs a band plays next, from setlist history. A
+          self-evaluating problem — every future show is automatic ground truth.
+        </p>
+        <p class="result">learned ranker MAP 0.792 vs 0.773 best baseline · doubles deep-cut recall</p>
+        <p class="stack">Python · ranking · rolling-origin evaluation · bootstrap CIs</p>
+      </article>
+
+      <article class="card">
+        <h3><a href="https://github.com/saurabhsingh3012/crate-economics">crate-economics</a><span class="tag">In progress</span></h3>
+        <p>
+          Forecasting the vinyl resale market — bridging my ARIMA/forecasting work in
+          industry to the record collection. Walk-forward backtesting, Holt-Winters and
+          ARIMA implemented from the maths.
+        </p>
+        <p class="result">Holt-Winters MASE 0.790 · walk-forward, ranked scale-free</p>
+        <p class="stack">Python · NumPy · time series · MASE</p>
       </article>
 
     </div>
