@@ -246,14 +246,15 @@
       </article>
 
       <article class="card">
-        <h3><a href="https://github.com/saurabhsingh3012/birdsong-robustness">birdsong-robustness</a><span class="tag">In progress</span></h3>
+        <h3><a href="https://github.com/saurabhsingh3012/birdsong-robustness">birdsong-robustness</a><span class="tag">Real data</span></h3>
         <p>
-          Published bird-song classifiers are evaluated on clean, curated recordings.
-          The field is wind, traffic, overlapping calls, and cheap microphones. This
-          measures how far they actually fall — a robustness benchmark across
-          controlled degradation axes.
+          How far does a bird-song classifier fall under real field conditions? Ran
+          <strong>BirdNET on real Xeno-canto recordings</strong> across 63 degradation
+          conditions. It shrugs off noise, distance, and reverb — but overlapping calls
+          (the cocktail-party problem) are its clear failure mode.
         </p>
-        <p class="stack">Python · NumPy · SciPy · signal processing</p>
+        <p class="result">clean F0.5 0.91 · robust to noise/distance · overlap breaks it (0.58)</p>
+        <p class="stack">Python · BirdNET · Xeno-canto · signal processing · benchmarking</p>
       </article>
 
       <article class="card">
