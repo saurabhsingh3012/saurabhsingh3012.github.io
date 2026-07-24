@@ -282,14 +282,14 @@
       </article>
 
       <article class="card">
-        <h3><a href="https://github.com/saurabhsingh3012/cover-song-id">cover-song-id</a><span class="tag">In progress</span></h3>
+        <h3><a href="https://github.com/saurabhsingh3012/cover-song-id">cover-song-id</a><span class="tag">Real data</span></h3>
         <p>
-          Are two recordings the same song, in different keys, tempos, and
-          arrangements? Exact matching is useless here — so, key-invariant chroma
-          features and sequence alignment. The ablation is the point: key invariance
-          alone triples retrieval accuracy.
+          Are two recordings the same song, in different keys and arrangements? Exact
+          matching fails, so — key-invariant chroma + sequence alignment. Run on the
+          <strong>real Da-TACOS benchmark</strong>, a prediction from the synthetic phase
+          held: local alignment decisively beats DTW on real reordered covers.
         </p>
-        <p class="result">key invariance lifts MAP 0.12 → 0.55; full method P@1 = 1.00</p>
+        <p class="result">real Da-TACOS: MAP 0.396, P@1 0.68 · key invariance triples it</p>
         <p class="stack">Python · NumPy · chroma · OTI · DTW / local alignment · MIR</p>
       </article>
 
