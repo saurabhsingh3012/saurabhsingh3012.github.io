@@ -301,14 +301,16 @@
       </article>
 
       <article class="card">
-        <h3><a href="https://github.com/saurabhsingh3012/crate-economics">crate-economics</a><span class="tag">In progress</span></h3>
+        <h3><a href="https://github.com/saurabhsingh3012/crate-economics">crate-economics</a><span class="tag">Real data</span></h3>
         <p>
           Forecasting the vinyl resale market — bridging my ARIMA/forecasting work in
-          industry to the record collection. Walk-forward backtesting, Holt-Winters and
-          ARIMA implemented from the maths.
+          industry to the record collection. Walk-forward backtesting; Holt-Winters and
+          ARIMA implemented from the maths. Then I pulled <strong>live Discogs prices</strong>
+          to check the simulator's core assumption — and found it overstates how strongly
+          scarcity drives price (real slope −0.12 vs an assumed −0.55).
         </p>
-        <p class="result">Holt-Winters MASE 0.790 · walk-forward, ranked scale-free</p>
-        <p class="stack">Python · NumPy · time series · MASE</p>
+        <p class="result">Holt-Winters MASE 0.790 · real Discogs data corrects the scarcity assumption</p>
+        <p class="stack">Python · NumPy · time series · MASE · Discogs API</p>
       </article>
 
     </div>
