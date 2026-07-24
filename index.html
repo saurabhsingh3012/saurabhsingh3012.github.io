@@ -270,13 +270,14 @@
       </article>
 
       <article class="card">
-        <h3><a href="https://github.com/saurabhsingh3012/audio-ssl">audio-ssl</a><span class="tag">In progress</span></h3>
+        <h3><a href="https://github.com/saurabhsingh3012/audio-ssl">audio-ssl</a><span class="tag">Real data</span></h3>
         <p>
-          Self-supervised contrastive pretraining for audio, evaluated by linear
-          probing — with the encoder's forward <em>and</em> backward passes written by
-          hand in NumPy and gradient-checked against autograd.
+          Self-supervised contrastive pretraining for audio, hand-written backprop in
+          NumPy (gradient-checked against autograd). A ~20× label-efficiency win on
+          synthetic audio — that, run honestly on <strong>real ESC-10</strong>, did
+          <em>not</em> transfer. Reported straight, with a falsifying control.
         </p>
-        <p class="result">~20× label efficiency: SSL at 5 labels/class beats raw at 100</p>
+        <p class="result">synthetic ~20× win · on real audio it didn't hold — reported straight</p>
         <p class="stack">Python · NumPy · contrastive learning · NT-Xent</p>
       </article>
 
