@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acoustic Fingerprinting, live &middot; audio-fingerprint</title>
+<meta name="description" content="Shazam-style acoustic fingerprinting running entirely in your browser. Watch a spectrogram turn into a constellation of peaks, then identify a track from a short, noisy excerpt.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9673;</text></svg>">
+<style>
+  :root{--bg:#fbf9f6;--surface:#fff;--ink:#1c1a17;--ink-soft:#5a534a;--ink-faint:#8b8177;
+    --rule:#e6e0d8;--accent:#b5541f;--accent-soft:#f3e6dc;--good:#2f7d4f;--bad:#a33}
+  @media(prefers-color-scheme:dark){:root{--bg:#131211;--surface:#1b1917;--ink:#f0ece6;--ink-soft:#b3aaa0;
+    --ink-faint:#837a71;--rule:#2e2a26;--accent:#e08a4c;--accent-soft:#2a211a;--good:#6cc48d;--bad:#e07070}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:400 16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Inter,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:60rem;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+  a{color:var(--accent)}
+  .back{font-size:.9rem;color:var(--ink-faint);text-decoration:none;display:inline-block;margin-bottom:2rem}
+  .back:hover{color:var(--accent)}
+  h1{font:500 clamp(1.9rem,5vw,2.6rem)/1.1 ui-serif,Georgia,serif;letter-spacing:-.02em;margin:0 0 .8rem}
+  h2{font:500 .78rem/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--ink-faint);margin:2.5rem 0 1rem}
+  .lede{color:var(--ink-soft);max-width:44rem;margin:0 0 1rem}
+  .note{font-size:.88rem;color:var(--ink-faint);max-width:44rem;margin:0 0 1.5rem}
+
+  .panel{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:1.4rem 1.4rem 1.5rem;margin-bottom:1.25rem}
+  .label{font:600 .68rem/1 ui-sans-serif,sans-serif;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.7rem}
+
+  .chips{display:flex;flex-wrap:wrap;gap:.5rem}
+  .chip{background:var(--bg);border:1px solid var(--rule);color:var(--ink-soft);border-radius:999px;
+    padding:.42rem .95rem;font-size:.9rem;cursor:pointer;font-family:inherit;transition:border-color .12s,background .12s}
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .chip.sel{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:500}
+  .chip .tid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:var(--ink-faint);margin-left:.35rem}
+
+  .controls{display:grid;gap:1.2rem;grid-template-columns:1fr;margin-top:.4rem}
+  @media(min-width:640px){.controls{grid-template-columns:1fr 1fr}}
+  .ctl label{display:block;font-size:.85rem;color:var(--ink-soft);margin-bottom:.4rem}
+  .ctl output{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+
+  .go{margin-top:1.3rem;background:var(--accent);color:var(--bg);border:0;border-radius:999px;
+    padding:.6rem 1.5rem;font:500 .95rem/1 inherit;cursor:pointer}
+  .go:hover{filter:brightness(1.06)}
+  .go:disabled{opacity:.5;cursor:default}
+
+  .drop{display:block;width:100%;border:2px dashed var(--rule);border-radius:8px;padding:1.4rem 1.2rem;
+    text-align:center;background:var(--bg);cursor:pointer;transition:border-color .15s,background .15s;margin-top:.5rem}
+  .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+  .drop strong{display:block;font-size:.98rem;margin-bottom:.25rem}
+  .drop span{font-size:.84rem;color:var(--ink-faint)}
+  input[type=file]{display:none}
+
+  #status{margin:1rem 0 0;font-size:.92rem;color:var(--ink-faint);min-height:1.4em}
+  #results{display:none}
+
+  .verdict{padding:1.15rem 1.3rem;border-radius:8px;background:var(--accent-soft);font-size:1rem;color:var(--ink);margin-bottom:1.25rem}
+  .verdict b{font-weight:600}
+  .verdict .hit{color:var(--good);font-weight:600}
+  .verdict .miss{color:var(--bad);font-weight:600}
+
+  canvas{width:100%;display:block;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+  .cap{font-size:.8rem;color:var(--ink-faint);margin:.5rem 0 0}
+
+  table{width:100%;border-collapse:collapse;margin-top:.5rem;font-size:.9rem}
+  th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--rule)}
+  th{font:600 .68rem/1 ui-sans-serif,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint)}
+  td.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:right;font-variant-numeric:tabular-nums}
+  tr.win td{color:var(--ink);font-weight:600;background:var(--accent-soft)}
+
+  footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--rule);font-size:.87rem;color:var(--ink-faint)}
+  footer a{color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="../../">&larr; Saurabh Singh</a>
+
+<h1>Acoustic fingerprinting, live</h1>
+<p class="lede">
+  This is the guts of Shazam, built from scratch and running in your browser. It turns
+  a track into a sparse constellation of spectrogram peaks, hashes pairs of those peaks
+  into keys, then identifies a short excerpt by voting on time alignment. Pick a track,
+  bury a clip of it under noise, and watch it still come back with the right answer.
+</p>
+<p class="note">
+  Everything runs locally. <strong>Nothing is uploaded.</strong> The exact same pipeline,
+  parameters and all, is the Python project
+  <a href="https://github.com/saurabhsingh3012/audio-fingerprint">audio-fingerprint</a>,
+  ported here bin for bin.
+</p>
+
+<div class="panel">
+  <div class="label">1 &nbsp;&middot;&nbsp; The reference library <span id="libcount" style="color:var(--ink-faint);font-weight:400;letter-spacing:0;text-transform:none"></span></div>
+  <div class="chips" id="tracks"></div>
+  <label class="drop" id="drop">
+    <strong>Add your own track</strong>
+    <span>drop an audio file here, or click to choose. It gets fingerprinted and added to the library. WAV, FLAC, MP3, M4A.</span>
+    <input type="file" id="file" accept="audio/*">
+  </label>
+</div>
+
+<div class="panel">
+  <div class="label">2 &nbsp;&middot;&nbsp; Cut a noisy excerpt and identify it</div>
+  <div class="controls">
+    <div class="ctl">
+      <label>Excerpt length: <output id="lenOut">4.0 s</output></label>
+      <input type="range" id="len" min="1" max="8" step="0.5" value="4">
+    </div>
+    <div class="ctl">
+      <label>Added noise: <output id="snrOut">0 dB SNR</output></label>
+      <input type="range" id="snr" min="-10" max="30" step="1" value="0">
+    </div>
+  </div>
+  <button class="go" id="go">Identify the excerpt</button>
+  <div id="status">Building the index&hellip;</div>
+</div>
+
+<div id="results">
+  <div class="verdict" id="verdict"></div>
+
+  <h2>The excerpt, fingerprinted</h2>
+  <canvas id="spec" width="1800" height="440"></canvas>
+  <p class="cap">
+    Spectrogram of the noisy excerpt (dark is quiet, warm is loud). The dots are the peaks the
+    picker kept: local maxima that stand above the local noise floor, spread across the
+    spectrum by a per-band quota so a bass-heavy passage cannot hog them all. Amplitude is
+    thrown away after this. Only where the peaks sit gets hashed, which is why noise barely
+    dents it.
+  </p>
+
+  <h2>The vote</h2>
+  <canvas id="hist" width="1800" height="240"></canvas>
+  <p class="cap">
+    Every shared hash proposes a time offset between the excerpt and a library track. For the
+    real match, thousands of hashes agree on one offset and stack into a single spike. For
+    everything else the offsets scatter. The tallest spike is the score.
+  </p>
+
+  <h2>Scores across the library</h2>
+  <table id="scores"><thead><tr><th>Track</th><th class="num">Aligned hashes</th><th class="num">Peak offset</th></tr></thead><tbody></tbody></table>
+</div>
+
+<footer>
+  Pipeline: 11025 Hz mono, 1024-point STFT (Hann, 75% overlap), magnitudes in dB. Peaks are
+  local maxima over an 11&times;9 bin neighbourhood that clear a local mean-plus-sigma threshold,
+  thinned to about 30 peaks per second by a quota over six geometric frequency bands. Each anchor
+  peak is paired with up to eight later peaks into (f1, f2, &Delta;t) hash keys; identification is a
+  time-offset histogram vote. On 48 real Creative-Commons tracks the Python version holds top-1 to
+  0 dB SNR. Source and full write-up in
+  <a href="https://github.com/saurabhsingh3012/audio-fingerprint">saurabhsingh3012/audio-fingerprint</a>.
+</footer>
+
+</div>
+
+<script>
+"use strict";
+// ============================================================================
+// Acoustic fingerprinting, ported from audio-fingerprint (Python).
+// Analysis geometry matches src/audio_fingerprint/spectrogram.py DEFAULT_CONFIG.
+// ============================================================================
+const SR = 11025, N_FFT = 1024, HOP = 256;
+const N_BINS = N_FFT / 2 + 1;                 // 513
+const FPS = SR / HOP;                          // ~43.07 frames/sec
+
+// ---- FFT (iterative radix-2, size 1024) -----------------------------------
+const REV = new Int32Array(N_FFT);
+(function(){ let j=0; for(let i=0;i<N_FFT;i++){ REV[i]=j; let bit=N_FFT>>1;
+  for(;j&bit;bit>>=1) j^=bit; j^=bit; } })();
+const COS = new Float64Array(N_FFT/2), SIN = new Float64Array(N_FFT/2);
+for(let i=0;i<N_FFT/2;i++){ const a=-2*Math.PI*i/N_FFT; COS[i]=Math.cos(a); SIN[i]=Math.sin(a); }
+function fftMag(re){
+  // in-place complex FFT on re (imag starts at 0); returns magnitude of bins 0..N_BINS-1
+  const im = new Float64Array(N_FFT);
+  const r = new Float64Array(N_FFT);
+  for(let i=0;i<N_FFT;i++) r[i]=re[REV[i]];
+  for(let len=2; len<=N_FFT; len<<=1){
+    const half=len>>1, step=N_FFT/len;
+    for(let i=0;i<N_FFT;i+=len){
+      for(let k=0,idx=0;k<half;k++,idx+=step){
+        const wr=COS[idx], wi=SIN[idx];
+        const ar=r[i+k+half], ai=im[i+k+half];
+        const tr=ar*wr-ai*wi, ti=ar*wi+ai*wr;
+        r[i+k+half]=r[i+k]-tr; im[i+k+half]=im[i+k]-ti;
+        r[i+k]+=tr; im[i+k]+=ti;
+      }
+    }
+  }
+  const mag=new Float64Array(N_BINS);
+  for(let b=0;b<N_BINS;b++) mag[b]=Math.sqrt(r[b]*r[b]+im[b]*im[b]);
+  return mag;
+}
+
+const HANN = new Float64Array(N_FFT);
+for(let n=0;n<N_FFT;n++) HANN[n]=0.5-0.5*Math.cos(2*Math.PI*n/N_FFT); // periodic
+
+// ---- dB power spectrogram: rows[bin] = Float64Array(n_frames) --------------
+function spectrogram(x){
+  const nFrames = x.length < N_FFT ? 0 : 1 + Math.floor((x.length-N_FFT)/HOP);
+  const rows = []; for(let b=0;b<N_BINS;b++) rows.push(new Float64Array(nFrames));
+  const frame = new Float64Array(N_FFT);
+  for(let t=0;t<nFrames;t++){
+    const off=t*HOP;
+    for(let n=0;n<N_FFT;n++) frame[n]=x[off+n]*HANN[n];
+    const mag=fftMag(frame);
+    for(let b=0;b<N_BINS;b++){
+      const p=mag[b]*mag[b];
+      rows[b][t]=10*Math.log10(p+1e-20);   // absolute floor, gain-invariant downstream
+    }
+  }
+  return {rows, nFrames};
+}
+
+// ---- separable filters -----------------------------------------------------
+function maxFilterRows(rows,nF,winF){ // max over frequency (bins), window winF, clamp edges
+  const r=(winF-1)>>1, out=[];
+  for(let b=0;b<N_BINS;b++) out.push(new Float64Array(nF));
+  for(let t=0;t<nF;t++) for(let b=0;b<N_BINS;b++){
+    let m=-Infinity; const lo=Math.max(0,b-r), hi=Math.min(N_BINS-1,b+r);
+    for(let k=lo;k<=hi;k++){ const v=rows[k][t]; if(v>m) m=v; }
+    out[b][t]=m;
+  }
+  return out;
+}
+function maxFilterCols(rows,nF,winT){ // max over time, window winT, clamp
+  const r=(winT-1)>>1, out=[];
+  for(let b=0;b<N_BINS;b++){ const row=rows[b], o=new Float64Array(nF);
+    for(let t=0;t<nF;t++){ let m=-Infinity; const lo=Math.max(0,t-r), hi=Math.min(nF-1,t+r);
+      for(let k=lo;k<=hi;k++){ const v=row[k]; if(v>m) m=v; } o[t]=m; }
+    out.push(o);
+  }
+  return out;
+}
+// box mean (and of squares) over freq window then time window, clamped counts
+function boxMean(rows,nF,winF,winT,sq){
+  const rf=(winF-1)>>1, rt=(winT-1)>>1;
+  // pass 1: freq
+  const tmp=[]; for(let b=0;b<N_BINS;b++) tmp.push(new Float64Array(nF));
+  for(let t=0;t<nF;t++){
+    // prefix over bins
+    const pre=new Float64Array(N_BINS+1);
+    for(let b=0;b<N_BINS;b++){ const v=sq?rows[b][t]*rows[b][t]:rows[b][t]; pre[b+1]=pre[b]+v; }
+    for(let b=0;b<N_BINS;b++){ const lo=Math.max(0,b-rf), hi=Math.min(N_BINS-1,b+rf);
+      tmp[b][t]=(pre[hi+1]-pre[lo])/(hi-lo+1); }
+  }
+  // pass 2: time
+  const out=[]; for(let b=0;b<N_BINS;b++) out.push(new Float64Array(nF));
+  for(let b=0;b<N_BINS;b++){ const row=tmp[b];
+    const pre=new Float64Array(nF+1);
+    for(let t=0;t<nF;t++) pre[t+1]=pre[t]+row[t];
+    for(let t=0;t<nF;t++){ const lo=Math.max(0,t-rt), hi=Math.min(nF-1,t+rt);
+      out[b][t]=(pre[hi+1]-pre[lo])/(hi-lo+1); }
+  }
+  return out;
+}
+
+// ---- peak picking (peaks.py) ----------------------------------------------
+const PEAK={density:30, nBands:6, nF:11, nT:9, bgF:41, bgT:31, k:1.0, minBin:4};
+function geomEdges(){
+  const lo=Math.max(PEAK.minBin,1), out=[];
+  for(let i=0;i<=PEAK.nBands;i++) out.push(Math.round(lo*Math.pow(N_BINS/lo, i/PEAK.nBands)));
+  const uniq=[...new Set(out)].sort((a,b)=>a-b);
+  return uniq; // [4,9,20,45,102,229,513]
+}
+const EDGES=geomEdges();
+function bandOf(bin){ let b=0; for(let i=1;i<EDGES.length;i++){ if(bin>=EDGES[i]) b=i; else break; }
+  return Math.min(b, EDGES.length-2); }
+
+function pickPeaks(spec){
+  const {rows,nFrames}=spec;
+  if(nFrames===0) return [];
+  const lmF=maxFilterRows(rows,nFrames,PEAK.nF);
+  const lm =maxFilterCols(lmF,nFrames,PEAK.nT);
+  const mean=boxMean(rows,nFrames,PEAK.bgF,PEAK.bgT,false);
+  const msq =boxMean(rows,nFrames,PEAK.bgF,PEAK.bgT,true);
+  const cand=[];
+  for(let b=PEAK.minBin;b<N_BINS;b++){
+    const row=rows[b], lmr=lm[b], mr=mean[b], sr=msq[b];
+    for(let t=0;t<nFrames;t++){
+      const v=row[t];
+      if(v>=lmr[t]){
+        const std=Math.sqrt(Math.max(sr[t]-mr[t]*mr[t],0));
+        if(v>mr[t]+PEAK.k*std) cand.push({t,b,db:v});
+      }
+    }
+  }
+  if(!cand.length) return [];
+  // quota: per (block, band) keep top perCell; then per-block refill to perBlock
+  const blockFrames=Math.max(1,Math.round(FPS));
+  const nBands=EDGES.length-1;
+  const perCell=Math.max(1,Math.round(PEAK.density/nBands));
+  const perBlock=Math.max(1,Math.round(PEAK.density*blockFrames/FPS));
+  for(const c of cand){ c.block=Math.floor(c.t/blockFrames); c.band=bandOf(c.b); c.keep=false; }
+  // group by cell
+  const cells=new Map();
+  for(const c of cand){ const key=c.block*nBands+c.band; let a=cells.get(key); if(!a){a=[];cells.set(key,a);} a.push(c); }
+  for(const arr of cells.values()){ arr.sort((x,y)=>y.db-x.db); for(let i=0;i<Math.min(perCell,arr.length);i++) arr[i].keep=true; }
+  // refill per block
+  const blocks=new Map();
+  for(const c of cand){ let a=blocks.get(c.block); if(!a){a=[];blocks.set(c.block,a);} a.push(c); }
+  for(const arr of blocks.values()){
+    let kept=0; for(const c of arr) if(c.keep) kept++;
+    let deficit=perBlock-kept;
+    if(deficit>0){ const left=arr.filter(c=>!c.keep).sort((x,y)=>y.db-x.db);
+      for(let i=0;i<Math.min(deficit,left.length);i++) left[i].keep=true; }
+  }
+  const peaks=cand.filter(c=>c.keep).map(c=>({t:c.t,b:c.b}));
+  peaks.sort((x,y)=> x.t-y.t || x.b-y.b);
+  return peaks;
+}
+
+// ---- hashing (hashing.py): fan_out 8, min_dt 1, max_dt 40, max_df 80 -------
+const HASH={fan:8,minDt:1,maxDt:40,maxDf:80};
+function fingerprint(peaks){
+  const frames=peaks.map(p=>p.t), bins=peaks.map(p=>p.b), n=peaks.length;
+  const hashes=[], offsets=[];
+  let lo=0, hi=0;
+  for(let i=0;i<n;i++){
+    const fi=frames[i], bi=bins[i];
+    // advance window [fi+minDt, fi+maxDt]
+    while(lo<n && frames[lo]<fi+HASH.minDt) lo++;
+    if(hi<lo) hi=lo;
+    while(hi<n && frames[hi]<=fi+HASH.maxDt) hi++;
+    let taken=0;
+    for(let j=Math.max(lo,i+1);j<hi && taken<HASH.fan;j++){
+      const df=bins[j]-bi;
+      if(df<=HASH.maxDf && df>=-HASH.maxDf){
+        // pack (f1,f2,dt) into one number (10 bits each)
+        const dt=frames[j]-fi;
+        const key=(bi*1024 + bins[j])*1024 + dt;
+        hashes.push(key); offsets.push(fi); taken++;
+      }
+    }
+  }
+  return {hashes,offsets};
+}
+
+// ---- index + match (index.py / match.py) ----------------------------------
+function buildIndex(tracks){
+  const idx=new Map(); // hash -> array of [trackId, anchorFrame]
+  tracks.forEach((tr,id)=>{
+    for(let i=0;i<tr.fp.hashes.length;i++){
+      const h=tr.fp.hashes[i]; let a=idx.get(h); if(!a){a=[];idx.set(h,a);} a.push([id,tr.fp.offsets[i]]);
+    }
+  });
+  return idx;
+}
+function identify(qfp, idx, nTracks){
+  // per track: histogram of (refAnchor - queryAnchor)
+  const hists=[]; for(let i=0;i<nTracks;i++) hists.push(new Map());
+  for(let i=0;i<qfp.hashes.length;i++){
+    const posts=idx.get(qfp.hashes[i]); if(!posts) continue;
+    const qa=qfp.offsets[i];
+    for(const [tid,ra] of posts){ const off=ra-qa; const m=hists[tid]; m.set(off,(m.get(off)||0)+1); }
+  }
+  const scores=hists.map((m,tid)=>{ let best=0,bestOff=0; for(const [off,c] of m){ if(c>best){best=c;bestOff=off;} }
+    return {tid,score:best,offset:bestOff,hist:m}; });
+  scores.sort((a,b)=>b.score-a.score);
+  return scores;
+}
+
+// ---- synthetic reference tracks -------------------------------------------
+// Distinct multi-partial note sequences so their constellations differ.
+const HARM=[1,2,3,4,5,6], HAMP=[1.0,0.6,0.42,0.30,0.22,0.16];
+function noteSeq(freqs, noteDur, secs){
+  const N=Math.round(secs*SR), x=new Float64Array(N);
+  const per=Math.round(noteDur*SR);
+  for(let n=0;n<N;n++){
+    const ni=Math.floor(n/per)%freqs.length;
+    const f=freqs[ni];
+    const tIn=(n%per)/per;               // 0..1 within note
+    const env=Math.sin(Math.PI*tIn);      // soft attack/decay
+    const t=n/SR;
+    let v=0;
+    for(let h=0;h<HARM.length;h++) v+=HAMP[h]*Math.sin(2*Math.PI*HARM[h]*f*t);
+    const f5=f*1.5;                        // a quieter fifth above, a second voice
+    for(let h=0;h<3;h++) v+=0.35*HAMP[h]*Math.sin(2*Math.PI*HARM[h]*f5*t);
+    x[n]=0.16*env*v;
+  }
+  return x;
+}
+const NOTE={C:261.63,D:293.66,E:329.63,F:349.23,G:392.0,A:440.0,B:493.88,c:523.25,d:587.33,e:659.25,g:783.99};
+const N=NOTE;
+const BUILTINS=[
+  {name:"Ascending arpeggio", freqs:[N.C,N.E,N.G,N.c,N.G,N.E, N.D,N.F,N.A,N.d,N.A,N.F], dur:0.36},
+  {name:"Falling line",        freqs:[N.g,N.e,N.c,N.A,N.G,N.E, N.F,N.D,N.C,N.E,N.G,N.c], dur:0.40},
+  {name:"Blues riff",          freqs:[N.C,N.E,N.F,N.G,N.E,N.C, N.G,N.F,N.E,N.C,N.D,N.C], dur:0.34},
+  {name:"Chromatic climb",     freqs:[N.C,N.D,N.E,N.F,N.G,N.A, N.B,N.c,N.B,N.A,N.G,N.F], dur:0.30}
+];
+
+// ---- audio helpers ---------------------------------------------------------
+function rms(x,a,b){ let s=0; for(let i=a;i<b;i++) s+=x[i]*x[i]; return Math.sqrt(s/(b-a)); }
+// deterministic PRNG so results are reproducible per settings
+function mulberry(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0;
+  let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function makeExcerpt(x, lenSec, cropSeed, noiseSeed, snrDb){
+  // crop position depends only on cropSeed (track+length) so raising SNR is
+  // always monotonic: the signal content is fixed, only the noise changes.
+  const len=Math.min(x.length, Math.round(lenSec*SR));
+  const cr=mulberry(cropSeed);
+  const start=Math.floor(cr()*Math.max(1,(x.length-len)));
+  const clip=x.slice(start,start+len);
+  const sig=rms(clip,0,clip.length)||1e-9;
+  const noiseAmp=sig/Math.pow(10,snrDb/20);
+  const nr=mulberry(noiseSeed);
+  for(let i=0;i<clip.length;i++){ clip[i]+=noiseAmp*(nr()*2-1)*Math.sqrt(3); } // uniform, unit-variance scaled
+  return clip;
+}
+
+// ---- UI --------------------------------------------------------------------
+const $=id=>document.getElementById(id);
+let TRACKS=[], IDX=null, selected=0;
+
+function fpTrack(name,audio){ const peaks=pickPeaks(spectrogram(audio));
+  return {name, audio, peaks, fp:fingerprint(peaks)}; }
+
+function renderChips(){
+  const box=$("tracks"); box.innerHTML="";
+  TRACKS.forEach((tr,i)=>{
+    const el=document.createElement("button");
+    el.className="chip"+(i===selected?" sel":"");
+    el.innerHTML=tr.name+'<span class="tid">'+tr.fp.hashes.length+' hashes</span>';
+    el.addEventListener("click",()=>{ selected=i; renderChips(); });
+    box.appendChild(el);
+  });
+  $("libcount").textContent=" ("+TRACKS.length+" indexed)";
+}
+
+function themeColors(){ const s=getComputedStyle(document.body);
+  return {accent:s.getPropertyValue("--accent").trim(),ink:s.getPropertyValue("--ink").trim(),
+    faint:s.getPropertyValue("--ink-faint").trim(),surface:s.getPropertyValue("--surface").trim(),
+    good:s.getPropertyValue("--good").trim(),rule:s.getPropertyValue("--rule").trim()}; }
+
+function drawSpec(spec,peaks){
+  const c=$("spec"), ctx=c.getContext("2d"), W=c.width, H=c.height;
+  const {rows,nFrames}=spec; ctx.clearRect(0,0,W,H);
+  if(!nFrames) return;
+  // normalise dB to 0..1 for colour
+  let mn=Infinity,mx=-Infinity;
+  for(let b=0;b<N_BINS;b++) for(let t=0;t<nFrames;t++){ const v=rows[b][t]; if(v<mn)mn=v; if(v>mx)mx=v; }
+  const rng=Math.max(mx-mn,1e-9);
+  const maxBin=260; // ~2.8 kHz, where the action is; keeps cells visible
+  const img=ctx.createImageData(W,H);
+  const col=themeColors();
+  const ac=hex(col.accent);
+  for(let px=0;px<W;px++){
+    const t=Math.min(nFrames-1,Math.floor(px/W*nFrames));
+    for(let py=0;py<H;py++){
+      const b=Math.min(maxBin,Math.floor((1-py/H)*maxBin));
+      let u=(rows[b][t]-mn)/rng; u=Math.pow(u,1.6);
+      const o=(py*W+px)*4;
+      img.data[o]=Math.round(20+ac.r*u); img.data[o+1]=Math.round(18+ac.g*u);
+      img.data[o+2]=Math.round(17+ac.b*u); img.data[o+3]=255;
+    }
+  }
+  ctx.putImageData(img,0,0);
+  // peaks
+  ctx.fillStyle=col.good; ctx.globalAlpha=0.95;
+  for(const p of peaks){ if(p.b>maxBin) continue;
+    const x=p.t/nFrames*W, y=(1-p.b/maxBin)*H;
+    ctx.beginPath(); ctx.arc(x,y,2.6,0,7); ctx.fill(); }
+  ctx.globalAlpha=1;
+}
+function hex(h){ h=h.replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join('');
+  return {r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)}; }
+
+function drawHist(winner){
+  const c=$("hist"), ctx=c.getContext("2d"), W=c.width, H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const col=themeColors();
+  const m=winner.hist; if(!m.size){ return; }
+  let lo=Infinity,hi=-Infinity,mx=0;
+  for(const [off,cnt] of m){ if(off<lo)lo=off; if(off>hi)hi=off; if(cnt>mx)mx=cnt; }
+  const span=Math.max(hi-lo,1);
+  ctx.fillStyle=col.faint;
+  for(const [off,cnt] of m){
+    const x=(off-lo)/span*(W-4)+2;
+    const h=cnt/mx*(H-24);
+    ctx.fillStyle = cnt===mx ? col.accent : col.faint;
+    ctx.globalAlpha = cnt===mx ? 1 : 0.5;
+    ctx.fillRect(x, H-h-4, Math.max(1.5,(W-4)/span*0.6), h);
+  }
+  ctx.globalAlpha=1; ctx.fillStyle=col.ink; ctx.font="13px ui-sans-serif,sans-serif";
+  ctx.fillText(mx+" hashes agree on offset "+winner.offset, 6, 16);
+}
+
+function renderScores(scores){
+  const tb=$("scores").querySelector("tbody"); tb.innerHTML="";
+  scores.forEach((s,i)=>{
+    const tr=document.createElement("tr"); if(i===0 && s.score>0) tr.className="win";
+    const offCell = s.score>0 ? String(s.offset) : "n/a";
+    tr.innerHTML="<td>"+TRACKS[s.tid].name+"</td><td class='num'>"+s.score+
+      "</td><td class='num'>"+offCell+"</td>";
+    tb.appendChild(tr);
+  });
+}
+
+function run(){
+  if(!IDX) return;
+  const lenSec=parseFloat($("len").value), snr=parseInt($("snr").value);
+  const cropSeed=(selected*7919 + Math.round(lenSec*10)*31)|0;
+  const noiseSeed=(cropSeed*13 + (snr+100)*101)|0;
+  const tr=TRACKS[selected];
+  const clip=makeExcerpt(tr.audio, lenSec, cropSeed, noiseSeed, snr);
+  const spec=spectrogram(clip);
+  const peaks=pickPeaks(spec);
+  const qfp=fingerprint(peaks);
+  const scores=identify(qfp, IDX, TRACKS.length);
+  const win=scores[0], second=scores[1]?scores[1].score:0;
+  const correct = win.score>0 && win.tid===selected;
+  const v=$("verdict");
+  const marginTxt = win.score>0 ? (" It beat the runner-up "+TRACKS[scores[1].tid].name+" by "+win.score+" to "+second+" aligned hashes.") : "";
+  if(correct){
+    v.innerHTML="<span class='hit'>Identified.</span> A "+lenSec.toFixed(1)+"&nbsp;s excerpt at "+snr+
+      "&nbsp;dB SNR was matched to <b>"+TRACKS[selected].name+"</b> from "+qfp.hashes.length+
+      " query hashes."+marginTxt;
+  } else if(win.score>0){
+    v.innerHTML="<span class='miss'>Missed.</span> At "+snr+"&nbsp;dB SNR the noise finally won: the top match was <b>"+
+      TRACKS[win.tid].name+"</b>, not "+TRACKS[selected].name+". Push the SNR up a little and it recovers.";
+  } else {
+    v.innerHTML="<span class='miss'>No match.</span> Too little signal survived to cast a vote. Try a longer excerpt or less noise.";
+  }
+  drawSpec(spec,peaks); drawHist(win); renderScores(scores);
+  $("results").style.display="block";
+  $("status").textContent="";
+}
+
+// ---- init ------------------------------------------------------------------
+$("len").addEventListener("input",e=>$("lenOut").textContent=parseFloat(e.target.value).toFixed(1)+" s");
+$("snr").addEventListener("input",e=>$("snrOut").textContent=e.target.value+" dB SNR");
+$("go").addEventListener("click",run);
+
+function rebuild(){ IDX=buildIndex(TRACKS); }
+
+function boot(){
+  // fingerprint built-ins (yielding so the "building" status paints first)
+  let i=0;
+  function step(){
+    if(i<BUILTINS.length){
+      const b=BUILTINS[i]; const audio=noteSeq(b.freqs,b.dur,8.0);
+      TRACKS.push(fpTrack(b.name,audio)); i++;
+      renderChips(); setTimeout(step,0);
+    } else {
+      rebuild(); $("status").textContent=""; $("go").disabled=false;
+      renderChips();
+    }
+  }
+  $("go").disabled=true;
+  step();
+}
+
+// enroll a user file
+async function handleFile(file){
+  $("status").textContent="Decoding "+file.name+"…";
+  try{
+    const ac=new (window.AudioContext||window.webkitAudioContext)();
+    const buf=await ac.decodeAudioData(await file.arrayBuffer());
+    ac.close();
+    // mono + linear resample to SR
+    const chans=buf.numberOfChannels, src=buf.getChannelData(0);
+    const mono=new Float64Array(src.length);
+    for(let i=0;i<src.length;i++){ let s=0; for(let c=0;c<chans;c++) s+=buf.getChannelData(c)[i]; mono[i]=s/chans; }
+    const ratio=SR/buf.sampleRate, outLen=Math.floor(mono.length*ratio), out=new Float64Array(outLen);
+    for(let i=0;i<outLen;i++){ const p=i/ratio, j=Math.floor(p), f=p-j;
+      out[i]=(mono[j]||0)*(1-f)+(mono[Math.min(j+1,mono.length-1)]||0)*f; }
+    const name=file.name.replace(/\.[^.]+$/,"").slice(0,28);
+    $("status").textContent="Fingerprinting "+name+"…";
+    setTimeout(()=>{ TRACKS.push(fpTrack(name,out)); selected=TRACKS.length-1; rebuild(); renderChips();
+      $("status").textContent="Added “"+name+"”. Now identify a noisy excerpt of it below."; },0);
+  }catch(e){ $("status").textContent="Could not decode that file ("+e.message+")."; }
+}
+$("file").addEventListener("change",e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+const drop=$("drop");
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
+drop.addEventListener("drop",e=>{ if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+boot();
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Entity Resolution Playground — turntable</title>
+<title>Entity Resolution Playground · turntable</title>
 <meta name="description" content="Interactive demo: how do you tell whether two music records describe the same album?">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◉</text></svg>">
 <style>
@@ -73,7 +73,7 @@
 
 <h1>Are these the same album?</h1>
 <p class="lede">
-  Discogs, MusicBrainz, Last.fm and Spotify all describe records differently — and
+  Discogs, MusicBrainz, Last.fm and Spotify all describe records differently, and
   string matching fails immediately. <em>In Rainbows</em> and <em>In Rainbows (2007
   Remaster)</em> are one album; Weezer's <em>Blue</em> and <em>Green</em> albums are
   two, and share a title, an artist, and a track count.
@@ -109,8 +109,8 @@
 
 <div class="verdict">
   <div class="verdict-head">
-    <div class="score" id="score">—</div>
-    <div class="badge" id="badge">—</div>
+    <div class="score" id="score">·</div>
+    <div class="badge" id="badge">·</div>
     <div class="verdict-why" id="why"></div>
   </div>
   <table>
@@ -228,7 +228,7 @@ function scorePair(L,R){
   const rc=(R.cat||"").replace(/\s/g,"").toUpperCase();
   if(lc&&rc&&lc===rc){
     out.score=CAT_MATCH; out.shortCircuit=true;
-    out.notes.push("Catalogue number exact match ("+lc+") — near-conclusive, short-circuited.");
+    out.notes.push("Catalogue number exact match ("+lc+"), near-conclusive, so scoring short-circuits here.");
     return out;
   }
   const raw={
@@ -252,10 +252,10 @@ function scorePair(L,R){
     const rd=Math.abs(L.dur-R.dur)/Math.max(L.dur,R.dur);
     if(rd>DUR_CONTRA_THRESHOLD){
       score*=DUR_CONTRA_PENALTY;
-      out.notes.push("Runtime contradiction: "+Math.round(rd*100)+"% apart ("+L.dur+"s vs "+R.dur+"s) — score damped 25%. This veto exists because self-titled albums were auto-merging.");
+      out.notes.push("Runtime contradiction: "+Math.round(rd*100)+"% apart ("+L.dur+"s vs "+R.dur+"s), so the score is damped 25%. This veto exists because self-titled albums were auto-merging.");
     }
   }
-  if(lc&&rc&&lc!==rc) out.notes.push("Catalogue numbers differ — expected across pressings, not penalised.");
+  if(lc&&rc&&lc!==rc) out.notes.push("Catalogue numbers differ, which is expected across pressings and not penalised.");
   out.score=score;
   return out;
 }
@@ -311,12 +311,12 @@ function render(){
   badge.className="badge "+verdict;
   $("why").textContent = verdict==="accept"
     ? "Auto-merged into one album."
-    : verdict==="review" ? "Too close to call — queued for a person to adjudicate rather than guessed at."
+    : verdict==="review" ? "Too close to call, so it is queued for a person to adjudicate rather than guessed at."
     : "Kept as separate albums.";
 
   const tb=$("features"); tb.innerHTML="";
   if(r.shortCircuit){
-    tb.innerHTML='<tr><td colspan="4" class="dropped">Short-circuited on catalogue number — no feature scoring needed.</td></tr>';
+    tb.innerHTML='<tr><td colspan="4" class="dropped">Short-circuited on catalogue number, no feature scoring needed.</td></tr>';
   } else {
     for(const k of ["title","artist","track_count","duration","year"]){
       const tr=document.createElement("tr");
@@ -326,7 +326,7 @@ function render(){
           '</td><td class="num">'+WEIGHTS[k].toFixed(2)+
           '</td><td><div class="bar"><span style="width:'+(v*100).toFixed(0)+'%"></span></div></td>';
       } else {
-        tr.innerHTML='<td>'+k.replace("_"," ")+'</td><td colspan="3" class="dropped">not available — dropped, weights renormalised</td>';
+        tr.innerHTML='<td>'+k.replace("_"," ")+'</td><td colspan="3" class="dropped">not available, dropped and weights renormalised</td>';
       }
       tb.appendChild(tr);
     }

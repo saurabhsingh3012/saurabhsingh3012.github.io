@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Loudness &amp; Dynamics Analyser — pressing-matters</title>
+<title>Loudness &amp; Dynamics Analyser · pressing-matters</title>
 <meta name="description" content="Measure the dynamic range of any audio file in your browser. ITU-R BS.1770-4 loudness, loudness range, true peak, crest factor and DR value.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◉</text></svg>">
 <style>
@@ -69,7 +69,7 @@
 
 <h1>How squashed is your music?</h1>
 <p class="lede">
-  Drop in an audio file and this measures its dynamics — the same ITU-R BS.1770-4
+  Drop in an audio file and this measures its dynamics. It runs the same ITU-R BS.1770-4
   loudness pipeline used for broadcast compliance, plus the DR value that record
   collectors argue about.
 </p>
@@ -84,7 +84,7 @@
      Do NOT also add for="file" -- double association fires the picker twice. -->
 <label class="drop" id="drop">
   <strong>Drop an audio file here</strong>
-  <span>or click to choose — WAV, FLAC, MP3, M4A. Large files take a moment to decode.</span>
+  <span>or click to choose. WAV, FLAC, MP3 or M4A. Large files take a moment to decode.</span>
   <input type="file" id="file" accept="audio/*">
 </label>
 
@@ -101,23 +101,23 @@
   <div class="file" id="fname"></div>
   <div class="grid">
     <div class="metric"><div class="k">Integrated loudness</div>
-      <div class="v"><span id="m-lufs">—</span><span class="u">LUFS</span></div>
+      <div class="v"><span id="m-lufs">·</span><span class="u">LUFS</span></div>
       <div class="d">Gated average loudness. Streaming platforms normalise to about −14.</div></div>
     <div class="metric"><div class="k">Loudness range</div>
-      <div class="v"><span id="m-lra">—</span><span class="u">LU</span></div>
+      <div class="v"><span id="m-lra">·</span><span class="u">LU</span></div>
       <div class="d">How much the loudness actually moves. Higher means it breathes.</div></div>
     <div class="metric"><div class="k">True peak</div>
-      <div class="v"><span id="m-tp">—</span><span class="u">dBFS</span></div>
+      <div class="v"><span id="m-tp">·</span><span class="u">dBFS</span></div>
       <div class="d">Above 0 means inter-sample clipping from limiting.</div></div>
     <div class="metric"><div class="k">Crest factor</div>
-      <div class="v"><span id="m-crest">—</span><span class="u">dB</span></div>
+      <div class="v"><span id="m-crest">·</span><span class="u">dB</span></div>
       <div class="d">Peak-to-RMS. A sine is 3.01 by definition.</div></div>
     <div class="metric"><div class="k">DR value</div>
-      <div class="v"><span id="m-dr">—</span></div>
+      <div class="v"><span id="m-dr">·</span></div>
       <div class="d">What the Dynamic Range Database quotes. Under 7 is heavily compressed.</div></div>
     <div class="metric"><div class="k">Source</div>
-      <div class="v" style="font-size:1.1rem"><span id="m-sr">—</span></div>
-      <div class="d" id="m-dur">—</div></div>
+      <div class="v" style="font-size:1.1rem"><span id="m-sr">·</span></div>
+      <div class="d" id="m-dur">·</div></div>
   </div>
   <div class="verdict" id="verdict"></div>
   <canvas id="wave" width="1600" height="220"></canvas>
@@ -126,7 +126,7 @@
 <footer>
   Implements ITU-R BS.1770-4 (K-weighting, gated loudness), EBU Tech 3342 (loudness
   range) and 4× oversampled true peak. The Python implementation is validated against
-  signals with analytically known answers — 9 checks, 0 failures. Source in
+  signals with analytically known answers: 9 checks, 0 failures. Source in
   <a href="https://github.com/saurabhsingh3012/pressing-matters">saurabhsingh3012/pressing-matters</a>.
 </footer>
 
@@ -248,7 +248,7 @@ function drValue(mono,sr){
 const $=id=>document.getElementById(id);
 const status=$("status");
 
-function fmt(v,d){ return (v===-Infinity||isNaN(v))?"—":v.toFixed(d===undefined?2:d); }
+function fmt(v,d){ return (v===-Infinity||isNaN(v))?"·":v.toFixed(d===undefined?2:d); }
 
 function drawWave(mono){
   const c=$("wave"), ctx=c.getContext("2d");
@@ -271,8 +271,8 @@ function verdictText(dr,lra,tp,lufs){
   if(dr>=13) bits.push("<b>Very open.</b> This has the dynamics of an unsquashed or audiophile master.");
   else if(dr>=9) bits.push("<b>Healthy dynamics.</b> Typical of a careful master or a pre-loudness-war release.");
   else if(dr>=7) bits.push("<b>Moderately compressed.</b> Common for mainstream modern releases.");
-  else bits.push("<b>Heavily compressed.</b> This is loudness-war territory — dynamics traded for volume.");
-  if(tp>0) bits.push("True peak is above 0 dBFS ("+fmt(tp)+"), which means inter-sample clipping — a fingerprint of aggressive limiting.");
+  else bits.push("<b>Heavily compressed.</b> This is loudness-war territory, dynamics traded for volume.");
+  if(tp>0) bits.push("True peak is above 0 dBFS ("+fmt(tp)+"), which means inter-sample clipping, a fingerprint of aggressive limiting.");
   if(lra<3 && lra>0) bits.push("Loudness range is very narrow ("+fmt(lra)+" LU): the level barely moves across the whole file.");
   if(lufs>-9) bits.push("At "+fmt(lufs)+" LUFS this is far louder than the −14 streaming platforms normalise to, so it will simply be turned down.");
   return bits.join(" ");

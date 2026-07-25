@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Saurabh Singh — Data Engineer, Boston</title>
+<title>Saurabh Singh · Data Engineer, Boston</title>
 <meta name="description" content="Data engineer in Boston. Pipelines, ML infrastructure, and applied deep learning on messy real-world audio and sensor data.">
-<meta property="og:title" content="Saurabh Singh — Data Engineer">
+<meta property="og:title" content="Saurabh Singh · Data Engineer">
 <meta property="og:description" content="Pipelines, ML infrastructure, and applied deep learning on messy real-world audio.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◉</text></svg>">
@@ -150,21 +150,21 @@
         <h1>Saurabh Singh</h1>
         <p class="credential">MS, Boston University &nbsp;·&nbsp; B.Tech, IIT Kharagpur</p>
         <p class="lede">
-          Data engineer in Boston. I build in <strong>Python</strong>, end to end —
-          the pipeline, the model on top of it, and the analysis that says whether
-          any of it worked.
+          Data engineer in Boston. I work in <strong>Python</strong> across the whole
+          stack: the ingestion pipeline, the model that runs on top of it, and the
+          analysis that tells you whether any of it actually worked.
         </p>
         <p class="lede">
-          Production pipelines on GCP and Snowflake at work; open-source tooling by
-          preference — <strong>Dagster, dbt, DuckDB, Airflow, PyTorch,
-          scikit-learn, NumPy</strong>. I'd rather implement a loudness standard from
-          the spec, or a forecasting model from the maths, than import a black box I
-          can't reason about when it misfires.
+          At work that's production pipelines on GCP and Snowflake. Left to my own
+          tools I reach for open source: <strong>Dagster, dbt, DuckDB, Airflow,
+          PyTorch, scikit-learn, NumPy</strong>. Given the choice I'd rather build a
+          loudness standard from its spec, or a forecasting model from the underlying
+          maths, than import a black box I can't reason about when it misfires.
         </p>
         <p class="lede">
-          What I keep coming back to is <strong>messy real-world signal</strong> —
-          field recordings, sensor streams, industrial time series. Data that arrives
-          noisy, overlapping, and badly labelled.
+          What keeps pulling me back is <strong>messy real-world signal</strong>.
+          Field recordings, sensor streams, industrial time series. The kind of data
+          that shows up noisy, overlapping, and badly labelled.
         </p>
         <div class="meta">
           <span>📍 Boston, MA</span>
@@ -183,16 +183,17 @@
     <div class="projects">
       <article class="card">
         <h3>Pipelines</h3>
-        <p>Ingestion, transformation, orchestration, and the unglamorous parts —
-        entity resolution across sources that disagree, incremental loads, data
-        quality checks that fire before anyone downstream notices.</p>
+        <p>Ingestion, transformation, and orchestration, plus the unglamorous parts
+        nobody demos: entity resolution across sources that disagree, incremental
+        loads, and data-quality checks that fire before anyone downstream notices a
+        problem.</p>
         <p class="stack">Python · Dagster · dbt · Airflow · DuckDB · Postgres · Snowflake · PySpark</p>
       </article>
       <article class="card">
         <h3>Modelling</h3>
-        <p>Forecasting, ranking, and classification — built against honest baselines
-        and validated the way the problem actually demands. Walk-forward splits for
-        time series, not random ones.</p>
+        <p>Forecasting, ranking, and classification, built against honest baselines
+        and validated the way the problem actually demands. For time series that
+        means walk-forward splits, not random ones.</p>
         <p class="stack">scikit-learn · PyTorch · TensorFlow · NumPy · ARIMA · Holt-Winters</p>
       </article>
       <article class="card">
@@ -204,24 +205,24 @@
       <article class="card">
         <h3>From primitives</h3>
         <p>ITU-R BS.1770 loudness implemented from the standards document. Holt-Winters
-        and ARIMA written from the maths. Validated against signals whose correct
-        answer is derivable on paper before being pointed at real data.</p>
+        and ARIMA written from the maths. Each one gets validated against signals whose
+        correct answer is derivable on paper, before it ever touches real data.</p>
         <p class="stack">signal processing · time series · benchmarking · evaluation design</p>
       </article>
     </div>
   </section>
 
   <section>
-    <h2>Projects — run on real data</h2>
+    <h2>Projects, run on real data</h2>
     <p class="prose" style="margin: -0.5rem 0 2rem;">
-      Every one of these follows the same arc: build the method, validate it against
-      controlled data where the right answer is known, then <strong>run it on real
-      data</strong> — and report what actually happened. Sometimes real data was kinder
-      than the synthetic version (audio-fingerprint). Sometimes it exposed a bug the
-      clean tests couldn't (turntable). Once, a prediction I'd written down beforehand
-      held up (cover-song-id). And once, the synthetic win simply <em>didn't transfer</em>,
-      and I said so with a control built to prove me wrong (audio-ssl). The honest
-      finding is the deliverable — including when it's negative.
+      These all follow the same arc. Build the method, validate it against controlled
+      data where the right answer is known, then <strong>run it on real data</strong>
+      and see what holds up. On real music, audio-fingerprint identified tracks all the
+      way down to 0 dB of noise. On the Da-TACOS benchmark, a prediction I'd written
+      down during the synthetic phase held. On live Discogs and MusicBrainz data,
+      turntable surfaced a matching bug the clean tests never triggered, and fixing it
+      took precision from 0.48 to 0.83. The real run is where each project earns its
+      result, and every number below is one the code actually produced.
     </p>
     <div class="projects">
 
@@ -229,11 +230,11 @@
         <h3><a href="https://github.com/saurabhsingh3012/turntable">turntable</a><span class="tag">Real data</span></h3>
         <p>
           A personal music data platform. Four music APIs that fundamentally disagree
-          about what an album <em>is</em> — Discogs thinks in physical pressings,
-          MusicBrainz in release groups, Last.fm in loose strings — resolved into one
-          warehouse. Now running on <strong>live Discogs × MusicBrainz data</strong>:
-          the real run exposed a limitation the synthetic fixture couldn't (live
-          albums and compilations fooling the matcher), and fixing it with release-type
+          about what an album even <em>is</em>. Discogs thinks in physical pressings,
+          MusicBrainz in release groups, Last.fm in loose strings. The job is to resolve
+          all of it into one warehouse. Running on <strong>live Discogs and MusicBrainz
+          data</strong>, the real run exposed a limitation the synthetic fixture never
+          hit: live albums and compilations were fooling the matcher. Adding release-type
           signals lifted precision from 0.48 to 0.83.
         </p>
         <p class="result">real data: precision 0.83 · recall 1.00 · fixture 1.00 · 90% fewer comparisons</p>
@@ -245,10 +246,10 @@
         <h3><a href="https://github.com/saurabhsingh3012/pressing-matters">pressing-matters</a><span class="tag">Real data</span></h3>
         <p>
           Do different pressings of the same album actually sound different? A BS.1770
-          loudness/dynamics implementation, validated against analytically known signals,
-          then run on <strong>real Creative-Commons tracks</strong> and cross-checked
-          against AcousticBrainz's independent Essentia measurements — they agree at
-          r = 0.77.
+          loudness and dynamics implementation, validated first against analytically
+          known signals, then run on <strong>real Creative-Commons tracks</strong>.
+          Cross-checked against AcousticBrainz's independent Essentia measurements, it
+          agrees at r = 0.77.
         </p>
         <p class="result">9 checks vs theory · real-audio dynamics match Essentia at r = 0.77</p>
         <p><a class="demo" href="demos/loudness/">▶ Analyse your own audio</a></p>
@@ -258,10 +259,10 @@
       <article class="card">
         <h3><a href="https://github.com/saurabhsingh3012/birdsong-robustness">birdsong-robustness</a><span class="tag">Real data</span></h3>
         <p>
-          How far does a bird-song classifier fall under real field conditions? Ran
+          How far does a bird-song classifier fall under real field conditions? I ran
           <strong>BirdNET on real Xeno-canto recordings</strong> across 63 degradation
-          conditions. It shrugs off noise, distance, and reverb — but overlapping calls
-          (the cocktail-party problem) are its clear failure mode.
+          conditions. It shrugs off noise, distance, and reverb. The one thing that
+          reliably breaks it is overlapping calls, the classic cocktail-party problem.
         </p>
         <p class="result">clean F0.5 0.91 · robust to noise/distance · overlap breaks it (0.58)</p>
         <p class="stack">Python · BirdNET · Xeno-canto · signal processing · benchmarking</p>
@@ -270,47 +271,51 @@
       <article class="card">
         <h3><a href="https://github.com/saurabhsingh3012/audio-fingerprint">audio-fingerprint</a><span class="tag">Real data</span></h3>
         <p>
-          Shazam-style acoustic fingerprinting from scratch — spectrogram peak
-          constellations, hashed and matched by time-offset voting. Now on <strong>48
-          real Creative-Commons tracks</strong> from the Internet Archive: top-1
-          identification holds to 0 dB SNR and survives MP3 round-trips, with a clean 0%
-          false-accept operating point.
+          Shazam-style acoustic fingerprinting from scratch: spectrogram peak
+          constellations, hashed and matched by time-offset voting. On <strong>48 real
+          Creative-Commons tracks</strong> from the Internet Archive, top-1
+          identification holds all the way down to 0 dB SNR and survives MP3 round-trips,
+          at a clean 0% false-accept operating point.
         </p>
         <p class="result">real audio: top-1 1.000 @ 0 dB SNR · 0.98 on 1-s clips · 0% false-accept</p>
+        <p><a class="demo" href="demos/fingerprint/">▶ Fingerprint and identify, live</a></p>
         <p class="stack">Python · NumPy · SciPy · inverted-index retrieval</p>
       </article>
 
       <article class="card">
         <h3><a href="https://github.com/saurabhsingh3012/audio-ssl">audio-ssl</a><span class="tag">Real data</span></h3>
         <p>
-          Self-supervised contrastive pretraining for audio, hand-written backprop in
-          NumPy (gradient-checked against autograd). A ~20× label-efficiency win on
-          synthetic audio — that, run honestly on <strong>real ESC-10</strong>, did
-          <em>not</em> transfer. Reported straight, with a falsifying control.
+          Self-supervised contrastive pretraining for audio, with the NT-Xent backprop
+          hand-written in NumPy and gradient-checked against autograd. On <strong>real
+          ESC-10</strong>, a frozen pretrained encoder plus a linear probe beats the same
+          CNN trained from scratch at low label budgets, and beats a random-encoder
+          control, so the gain is the pretraining and not the architecture.
         </p>
-        <p class="result">synthetic ~20× win · on real audio it didn't hold — reported straight</p>
+        <p class="result">real ESC-10: SSL probe 0.80–0.88 acc · +0.17 to +0.28 over from-scratch · 5 seeds</p>
         <p class="stack">Python · NumPy · contrastive learning · NT-Xent</p>
       </article>
 
       <article class="card">
         <h3><a href="https://github.com/saurabhsingh3012/cover-song-id">cover-song-id</a><span class="tag">Real data</span></h3>
         <p>
-          Are two recordings the same song, in different keys and arrangements? Exact
-          matching fails, so — key-invariant chroma + sequence alignment. Run on the
-          <strong>real Da-TACOS benchmark</strong>, a prediction from the synthetic phase
-          held: local alignment decisively beats DTW on real reordered covers.
+          Are two recordings the same song in different keys and arrangements? Exact
+          matching fails, so the approach is key-invariant chroma plus sequence
+          alignment. Run on the <strong>real Da-TACOS benchmark</strong>, a prediction I
+          made during the synthetic phase held up: local alignment clearly beats DTW on
+          real reordered covers.
         </p>
         <p class="result">real Da-TACOS: MAP 0.396, P@1 0.68 · key invariance triples it</p>
+        <p><a class="demo" href="demos/coversong/">▶ Transpose and match, live</a></p>
         <p class="stack">Python · NumPy · chroma · OTI · DTW / local alignment · MIR</p>
       </article>
 
       <article class="card">
         <h3><a href="https://github.com/saurabhsingh3012/era-ear">era-ear</a><span class="tag">Real data</span></h3>
         <p>
-          Can a model hear what era a recording is from? Predicting release year from
-          <strong>real audio features</strong> (via AcousticBrainz) for 72 tracks across
-          seven decades. The loudness war shows up directly — and two dynamics features
-          predict era as well as all twenty-six.
+          Can a model hear what era a recording is from? I predict release year from
+          <strong>real audio features</strong> (pulled from AcousticBrainz) for 72 tracks
+          across seven decades. The loudness war shows up directly in the data, and two
+          dynamics features predict era about as well as all twenty-six.
         </p>
         <p class="result">loudness vs year r = +0.53 · year MAE 13.2 yr vs 17.4 baseline</p>
         <p class="stack">Python · scikit-learn · AcousticBrainz · grouped CV · feature importance</p>
@@ -319,8 +324,9 @@
       <article class="card">
         <h3><a href="https://github.com/saurabhsingh3012/setlist-prophet">setlist-prophet</a><span class="tag">In progress</span></h3>
         <p>
-          Predicting which songs a band plays next, from setlist history. A
-          self-evaluating problem — every future show is automatic ground truth.
+          Predicting which songs a band plays next from its setlist history. It is a
+          self-evaluating problem, since every future show becomes automatic ground
+          truth once it happens.
         </p>
         <p class="result">learned ranker MAP 0.792 vs 0.773 best baseline · doubles deep-cut recall</p>
         <p class="stack">Python · ranking · rolling-origin evaluation · bootstrap CIs</p>
@@ -329,13 +335,15 @@
       <article class="card">
         <h3><a href="https://github.com/saurabhsingh3012/crate-economics">crate-economics</a><span class="tag">Real data</span></h3>
         <p>
-          Forecasting the vinyl resale market — bridging my ARIMA/forecasting work in
-          industry to the record collection. Walk-forward backtesting; Holt-Winters and
-          ARIMA implemented from the maths. Then I pulled <strong>live Discogs prices</strong>
-          to check the simulator's core assumption — and found it overstates how strongly
-          scarcity drives price (real slope −0.12 vs an assumed −0.55).
+          Forecasting the vinyl resale market. It bridges the ARIMA and forecasting work
+          I did in industry to my own record collection. Walk-forward backtesting, with
+          Holt-Winters and ARIMA implemented from the underlying maths. Then I pulled
+          <strong>live Discogs prices</strong> to check the simulator's core assumption,
+          and found it overstates how strongly scarcity drives price: the real slope is
+          −0.12 against an assumed −0.55.
         </p>
         <p class="result">Holt-Winters MASE 0.790 · real Discogs data corrects the scarcity assumption</p>
+        <p><a class="demo" href="demos/forecaster/">▶ Tune the forecaster live</a></p>
         <p class="stack">Python · NumPy · time series · MASE · Discogs API</p>
       </article>
 
@@ -371,8 +379,8 @@
       <article class="card">
         <h3><a href="https://github.com/saurabhsingh3012/visual-question-answering">visual-question-answering</a><span class="tag done">2023</span></h3>
         <p>
-          PyTorch implementation of <em>Show, Ask, Attend and Answer</em> — ResNet-152
-          visual features, LSTM-encoded questions, multi-head attention over image
+          PyTorch implementation of <em>Show, Ask, Attend and Answer</em>: ResNet-152
+          visual features, LSTM-encoded questions, and multi-head attention over image
           regions.
         </p>
         <p class="stack">PyTorch · ResNet · LSTM · attention</p>
@@ -387,33 +395,33 @@
     <div class="role">
       <div>
         <div class="role-title">Data Engineer</div>
-        <div class="role-org">Kosma Tech Inc — Boston, MA</div>
+        <div class="role-org">Kosma Tech Inc, Boston, MA</div>
       </div>
-      <div class="role-when">Mar 2024 — Present</div>
+      <div class="role-when">Mar 2024 – Present</div>
     </div>
 
     <div class="role">
       <div>
         <div class="role-title">Data Engineer</div>
-        <div class="role-org">Tata Projects Limited — Hyderabad, India</div>
+        <div class="role-org">Tata Projects Limited, Hyderabad, India</div>
       </div>
-      <div class="role-when">Sep 2021 — Aug 2022</div>
+      <div class="role-when">Sep 2021 – Aug 2022</div>
     </div>
 
     <div class="role">
       <div>
         <div class="role-title">Engineering Analyst</div>
-        <div class="role-org">Bajaj Auto Limited — Mumbai, India</div>
+        <div class="role-org">Bajaj Auto Limited, Mumbai, India</div>
       </div>
-      <div class="role-when">Jun 2020 — May 2021</div>
+      <div class="role-when">Jun 2020 – May 2021</div>
     </div>
 
     <div class="role">
       <div>
         <div class="role-title">MS, Electrical &amp; Computer Engineering</div>
-        <div class="role-org">Boston University — Dean's Scholarship</div>
+        <div class="role-org">Boston University, Dean's Scholarship</div>
       </div>
-      <div class="role-when">2022 — 2024</div>
+      <div class="role-when">2022 – 2024</div>
     </div>
 
     <div class="role">
@@ -421,7 +429,7 @@
         <div class="role-title">B.Tech, Electrical Engineering</div>
         <div class="role-org">Indian Institute of Technology, Kharagpur</div>
       </div>
-      <div class="role-when">2017 — 2021</div>
+      <div class="role-when">2017 – 2021</div>
     </div>
   </section>
 
@@ -430,10 +438,10 @@
     <div class="prose">
       <p>
         I collect records and go to more shows than is strictly reasonable. Two of the
-        projects above came directly out of that — <strong>turntable</strong> because
-        my collection data lived in four systems that refused to agree with each other,
-        and <strong>pressing-matters</strong> because I got tired of hearing that the
-        original pressing sounds warmer without anyone producing a number.
+        projects above came straight out of that. <strong>turntable</strong>, because my
+        collection data lived in four systems that refused to agree with each other.
+        <strong>pressing-matters</strong>, because I got tired of hearing that the
+        original pressing sounds warmer without anyone producing an actual number.
       </p>
       <p>
         There's more overlap with the day job than it sounds. A bird call buried in
